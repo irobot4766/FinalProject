@@ -49,33 +49,40 @@ function move() {
 }
 
 
-let dodgeInfo = [0, false, true, 0]
+
+let dodgeHold = 0
+let isDodging = false
+let canDodge = true
+let dodgeCooldown = 0
 // dodgeHold, isDodging, canDodge, dodgeCooldown
 function checkDodge() {
-    if (dodgeInfo[1]) {
-        dodgeInfo[0] -= 1
-        if (dodgeInfo[0] === 0) {
+    if (isDodging) {
+        dodgeHold -= 1
+        if (dodgeHold === 0) {
             player.height += 100
             player.yloc -= 100
-            dodgeInfo[1] = false
+            isDodging = false
+            dodgeCooldown = 60
             canPunch = true
         }
     }
 
-    if (!dodgeInfo[2]) {
-        dodgeInfo[3] -= 1
-        if (dodgeInfo[3] === 0) {
-            dodgeInfo[2] = true
+    if (!canDodge) {
+        dodgeCooldown -= 1
+        if (dodgeCooldown === 0) {
+            canDodge = true
         }
     }
 }
 
 function dodge() {
-    if (dodgeInfo[2]) {
+    if (canDodge) {
         console.log("player 1 dodge")
         player.height -= 100
         player.yloc += 100
-        dodgeInfo = [15, true, false, 60]
+        dodgeHold = 15
+        isDodging = true
+        canDodge = false
         canPunch = false
     }
 }
@@ -86,14 +93,30 @@ let punchHold = 0
 let punchCooldown = 0
 
 function checkPunch() {
+    if (isPunching) {
+        punchHold -= 1
+        if (punchHold === 0) {
+            punchCooldown = 30
+            isPunching = false
+            canDodge = true
+        }
+    }
 
+    if (!canPunch) {
+        punchCooldown -= 1
+        if (punchCooldown === 0) {
+            canPunch = true
+        }
+    }
 }
 
 function lPunch() {
     if (canPunch) {
         console.log("player 1 punched")
-        dodgeInfo = [5, true, false, 60]
+        punchHold = 10
+        isPunching = true
         canPunch = false
+        canDodge = false
     }
 }
 
