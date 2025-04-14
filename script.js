@@ -17,10 +17,13 @@ const createImage = function(src, x, y, w, h, health, damage, defense, speed, st
     return img;
 }
 
-player = createImage("Resources/Player/main.png", 100, 340, 140, 200, 100, 10, 10, 2, 100)
+player = createImage("Resources/Player/main.png", 100, 340, 140, 200, 100, 3, 10, 2, 100)
+enemy = createImage("Resources/Enemy/enemy.png", 700, 340, 140, 200, 100, 10, 10, 2, 100)
+
 
 function initialize() {
     ctx.drawImage(player, player.xloc, player.yloc, player.width, player.height)
+    ctx.drawImage(enemy, enemy.xloc, enemy.yloc, enemy.width, enemy.height)
     clear()
     animateGame()
 }
@@ -34,7 +37,15 @@ function animateGame() {
     checkDodge()
     checkPunching()
     checkBlocking()
-    a = requestAnimationFrame(animateGame);
+    animateHealth()
+    let a = requestAnimationFrame(animateGame);
+}
+
+function animateHealth() {
+    //ratio for player is 100 to 435
+    playerHealthTX = player.health * 4.35
+    playerHealthBX = playerHealthTX - 40
+    if (playerHealthTX <= 0) playerHealthTX = 0
 }
 
 function clear() {
@@ -44,12 +55,17 @@ function clear() {
 
 function drawPlayers() {
     ctx.drawImage(player, player.xloc, player.yloc, player.width, player.height);
+    ctx.drawImage(enemy, enemy.xloc, enemy.yloc, enemy.width, enemy.height)
 }
 
-function drawBars() {
-    ctx.fillStyle = "red"
+let playerHealthTX = 435
+let playerHealthBX = 395
 
-    ctx.beginPath(); // health bar player
+
+function drawBars() {
+    ctx.fillStyle = "#000000"
+
+    ctx.beginPath(); // health bar border player
     ctx.moveTo(0, 2);
     ctx.lineTo(450, 2);
     ctx.lineTo(400, 52);
@@ -57,7 +73,43 @@ function drawBars() {
     ctx.closePath();
     ctx.fill()
 
-    ctx.beginPath(); //health bar enemy
+    ctx.beginPath(); // health bar border player
+    ctx.moveTo(960, 2);
+    ctx.lineTo(510, 2);
+    ctx.lineTo(560, 52);
+    ctx.lineTo(960, 52);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "#474747"
+
+    ctx.beginPath(); // full health bar enemy
+    ctx.moveTo(5, 7);
+    ctx.lineTo(435, 7);
+    ctx.lineTo(395, 47);
+    ctx.lineTo(5, 47);
+    ctx.closePath();
+    ctx.fill()
+
+    ctx.beginPath(); // full health bar enemy
+    ctx.moveTo(960, 2);
+    ctx.lineTo(510, 2);
+    ctx.lineTo(560, 52);
+    ctx.lineTo(960, 52);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "#cc0000"
+
+    ctx.beginPath(); // real health bar player
+    ctx.moveTo(5, 7);
+    ctx.lineTo(playerHealthTX, 7);
+    ctx.lineTo(playerHealthBX, 47);
+    ctx.lineTo(5, 47);
+    ctx.closePath();
+    ctx.fill()
+
+    ctx.beginPath(); // full health bar enemy
     ctx.moveTo(960, 2);
     ctx.lineTo(510, 2);
     ctx.lineTo(560, 52);
@@ -171,6 +223,11 @@ function lPunch() {
         isPunching = true
         canPunch = false
         canDodge = false
+
+        if (player.xloc + player.width >= enemy.xloc - 75) {
+            //enemy is hit by player
+            enemy.health -= player.damage
+        }
     }
 }
 
