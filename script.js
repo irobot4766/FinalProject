@@ -34,10 +34,12 @@ function animateGame() {
     drawPlayers()
     drawBars()
     movePlayers()
+    checkCollision()
     checkDodge()
     checkPunching()
     checkBlocking()
     animateHealth()
+
     let a = requestAnimationFrame(animateGame);
 }
 
@@ -179,7 +181,18 @@ function drawBars() {
 
 function movePlayers() {
     if (keys.a) player.xloc -= player.speed
-    if (keys.d) player.xloc += player.speed
+    if (keys.d) {
+        player.xloc += player.speed
+        if (player.xloc + player.width > enemy.xloc) {
+            player.xloc -= player.speed
+        }
+    }
+}
+
+function checkCollision() {
+    if (enemy.xloc < player.xloc + player.width) {
+        enemy.xloc += enemy.speed
+    }
 }
 
 let dodgeHold = 0
@@ -279,6 +292,10 @@ function rPunch() {
         isPunching = true
         canPunch = false
         canDodge = false
+
+        if (player.xloc + player.width >= enemy.xloc - 85) {
+            enemy.health -= player.damage * 0.75
+        }
     }
 }
 
@@ -290,6 +307,10 @@ function hook() {
         isPunching = true
         canPunch = false
         canDodge = false
+
+        if (player.xloc + player.width >= enemy.xloc - 40) {
+            enemy.health -= player.damage * 2
+        }
     }
 }
 
