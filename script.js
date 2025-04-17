@@ -16,14 +16,22 @@ const createImage = function(src, x, y, w, h, health, damage, defense, speed, st
     img.stamina = stamina
     img.stance = stance
 
-    img.idle = idle
-    img.rWalk = rWalk
-    img.lWalk = lWalk
+
     return img;
 }
 
-player = createImage("Resources/Player/player.png", 100, 340, 140, 200, 100, 3, 10, 2, 100, "idle", "Resources/Player/PlayerIdle.png", "Resources/Player/PlayerRWalk.png", "Resources/Player/PlayerLWalk.png")
+let playerImage = "Resources/Player/player.png"
+player = createImage(playerImage, 100, 340, 140, 200, 100, 3, 10, 2, 100, "idle")
 enemy = createImage("Resources/Enemy/enemy.png", 700, 340, 140, 200, 100, 10, 10, 2, 100, "idle")
+
+const playerIdleImage = new Image();
+playerIdleImage.src = 'Resources/Player/PlayerIdle.png'
+
+const playerRightWalkImage = new Image();
+playerRightWalkImage.src = 'Resources/Player/PlayerRWalk.png'
+
+const playerLeftWalkImage = new Image();
+playerLeftWalkImage.src = 'Resources/Player/PlayerLWalk.png'
 
 
 function initialize() {
@@ -53,14 +61,11 @@ function clear() {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 }
 
-let yes = true
-
 function drawPlayers() {
     checkPlayerFrame(player)
     // player src / src x / src y / src width / src height / player x / player y / player width / player height
-    ctx.drawImage(player, 140 * (playerAnimationFrame%playerTotalAnimationFrames), 0, 140, 200, player.xloc, player.yloc, player.width, player.height)
+    ctx.drawImage(playerImage, 140 * (playerAnimationFrame%playerTotalAnimationFrames), 0, 140, 200, player.xloc, player.yloc, player.width, player.height)
     ctx.drawImage(enemy, enemy.xloc, enemy.yloc, enemy.width, enemy.height)
-    if (yes) console.log("player Animation Frame " + playerAnimationFrame + " Player TotalFrames " + playerTotalAnimationFrames)
 }
 
 let playerTotalAnimationFrames = 2
@@ -71,7 +76,7 @@ function checkPlayerFrame(character) {
 
     if (character.stance === "idle") {
         playerTotalAnimationFrames = 2
-        character.src = character.idle
+        playerImage = playerIdleImage
         playerFrame += 1
         if (playerFrame > 25) {
             playerAnimationFrame += 1
@@ -80,16 +85,22 @@ function checkPlayerFrame(character) {
     }
     if (character.stance === "rightWalk") {
         playerTotalAnimationFrames = 10
-        character.src = character.rWalk
-        playerFrame += 1
-        if (playerFrame > 6) {
+        playerImage = playerRightWalkImage
+        if (firstFrame) {
+            playerFrame = 0
+            playerAnimationFrame = 0
+            firstFrame = false
+        }
+        if (playerFrame >= 6) {
             playerAnimationFrame += 1
             playerFrame = 0
         }
+        playerFrame += 1
     }
     if (character.stance === "leftWalk") {
         playerTotalAnimationFrames = 10
-        character.src = character.lWalk
+        playerImage = playerLeftWalkImage
+
         playerFrame += 1
         if (playerFrame > 6) {
             playerAnimationFrame += 1
@@ -376,11 +387,6 @@ document.addEventListener("keydown", function(e) {
         keys.a = false
         keys.d = true
         player.stance = "rightWalk"
-        if (firstFrame) {
-            playerFrame = 0
-            playerAnimationFrame = 0
-            firstFrame = false
-        }
 
     }
     if (e.key === ' ') dodge()
