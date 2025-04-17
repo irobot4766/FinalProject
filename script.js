@@ -91,7 +91,7 @@ function checkPlayerFrame(character) {
             playerAnimationFrame = 0
             firstFrame = false
         }
-        if (playerFrame >= 6) {
+        if (playerFrame >= 4) {
             playerAnimationFrame += 1
             playerFrame = 0
         }
@@ -102,7 +102,7 @@ function checkPlayerFrame(character) {
         playerImage = playerLeftWalkImage
 
         playerFrame += 1
-        if (playerFrame > 6) {
+        if (playerFrame >= 4) {
             playerAnimationFrame += 1
             playerFrame = 0
         }
@@ -216,21 +216,37 @@ function drawBars() {
     ctx.fillRect(0, 7, 5, 40);
     ctx.fillRect(955, 7, 5, 40);
 
-    ctx.fillStyle = "#49ff2f"
-
     ctx.beginPath(); // stamina bar player
-    ctx.moveTo(0, 54);
-    ctx.lineTo(350, 54);
-    ctx.lineTo(325, 79);
-    ctx.lineTo(0, 79);
+    ctx.moveTo(0, 52);
+    ctx.lineTo(365, 52);
+    ctx.lineTo(333, 85);
+    ctx.lineTo(0, 85);
     ctx.closePath();
     ctx.fill()
 
     ctx.beginPath(); // stamina bar player
-    ctx.moveTo(960, 54);
-    ctx.lineTo(610, 54);
-    ctx.lineTo(635, 79);
-    ctx.lineTo(960, 79);
+    ctx.moveTo(960, 52);
+    ctx.lineTo(595, 52);
+    ctx.lineTo(625, 85);
+    ctx.lineTo(960, 85);
+    ctx.closePath();
+    ctx.fill()
+
+    ctx.fillStyle = "#49ff2f"
+
+    ctx.beginPath(); // stamina bar player
+    ctx.moveTo(5, 54);
+    ctx.lineTo(355, 54);
+    ctx.lineTo(330, 79);
+    ctx.lineTo(5, 79);
+    ctx.closePath();
+    ctx.fill()
+
+    ctx.beginPath(); // stamina bar player
+    ctx.moveTo(955, 54);
+    ctx.lineTo(605, 54);
+    ctx.lineTo(630, 79);
+    ctx.lineTo(955, 79);
     ctx.closePath();
     ctx.fill()
 }
