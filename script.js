@@ -2,7 +2,7 @@
 let canvas = document.getElementById("gameWindow");
 let ctx = canvas.getContext("2d");
 
-const createImage = function(src, x, y, w, h, health, damage, defense, speed, stamina) {
+const createImage = function(src, x, y, w, h, health, damage, defense, speed, stamina, stance, idle, rWalk, lWalk) {
     const img = new Image();
     img.src = src
     img.xloc = x
@@ -14,11 +14,16 @@ const createImage = function(src, x, y, w, h, health, damage, defense, speed, st
     img.defense = defense
     img.speed = speed
     img.stamina = stamina
+    img.stance = stance
+
+    img.idle = idle
+    img.rWalk = rWalk
+    img.lWalk = lWalk
     return img;
 }
 
-player = createImage("Resources/Player/main.png", 100, 340, 140, 200, 100, 3, 10, 2, 100)
-enemy = createImage("Resources/Enemy/enemy.png", 700, 340, 140, 200, 100, 10, 10, 2, 100)
+player = createImage("Resources/Player/player.png", 100, 340, 140, 200, 100, 3, 10, 2, 100, "idle", "Resources/Player/PlayerIdle.png", "Resources/Player/PlayerRWalk.png", "Resources/Player/PlayerLWalk.png")
+enemy = createImage("Resources/Enemy/enemy.png", 700, 340, 140, 200, 100, 10, 10, 2, 100, "idle")
 
 
 function initialize() {
@@ -48,9 +53,49 @@ function clear() {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 }
 
+let yes = true
+
 function drawPlayers() {
-    ctx.drawImage(player, player.xloc, player.yloc, player.width, player.height);
+    checkPlayerFrame(player)
+    // player src / src x / src y / src width / src height / player x / player y / player width / player height
+    ctx.drawImage(player, 140 * (playerAnimationFrame%playerTotalAnimationFrames), 0, 140, 200, player.xloc, player.yloc, player.width, player.height)
     ctx.drawImage(enemy, enemy.xloc, enemy.yloc, enemy.width, enemy.height)
+    if (yes) console.log("player Animation Frame " + playerAnimationFrame + " Player TotalFrames " + playerTotalAnimationFrames)
+}
+
+let playerTotalAnimationFrames = 2
+let playerAnimationFrame = 1
+let playerFrame = 0
+function checkPlayerFrame(character) {
+    if (!keys.d && !keys.a) character.stance = "idle"
+
+    if (character.stance === "idle") {
+        playerTotalAnimationFrames = 2
+        character.src = character.idle
+        playerFrame += 1
+        if (playerFrame > 25) {
+            playerAnimationFrame += 1
+            playerFrame = 0
+        }
+    }
+    if (character.stance === "rightWalk") {
+        playerTotalAnimationFrames = 10
+        character.src = character.rWalk
+        playerFrame += 1
+        if (playerFrame > 6) {
+            playerAnimationFrame += 1
+            playerFrame = 0
+        }
+    }
+    if (character.stance === "leftWalk") {
+        playerTotalAnimationFrames = 10
+        character.src = character.lWalk
+        playerFrame += 1
+        if (playerFrame > 6) {
+            playerAnimationFrame += 1
+            playerFrame = 0
+        }
+    }
 }
 
 let playerHealthTX = 435
@@ -315,14 +360,28 @@ function hook() {
 }
 
 
+let firstFrame = true
 document.addEventListener("keydown", function(e) {
     if (e.key.toLowerCase() === 'a') {
         keys.a = true
         keys.d = false
+        player.stance = "leftWalk"
+        if (firstFrame) {
+            playerFrame = 0
+            playerAnimationFrame = 0
+            firstFrame = false
+        }
     }
     if (e.key.toLowerCase() === 'd') {
         keys.a = false
         keys.d = true
+        player.stance = "rightWalk"
+        if (firstFrame) {
+            playerFrame = 0
+            playerAnimationFrame = 0
+            firstFrame = false
+        }
+
     }
     if (e.key === ' ') dodge()
     if (e.key.toLowerCase() === 's' && canBlock) {
@@ -332,6 +391,7 @@ document.addEventListener("keydown", function(e) {
             keys.blocking = true
             isBlocking = true
         }
+        yes = false
     }
     if (e.key.toLowerCase() === 'k') lPunch()
     if (e.key.toLowerCase() === 'l') rPunch()
@@ -342,8 +402,14 @@ document.addEventListener("keydown", function(e) {
 })
 
 document.addEventListener("keyup", function(e) {
-    if (e.key.toLowerCase() === 'a') keys.a = false
-    if (e.key.toLowerCase() === 'd') keys.d = false
+    if (e.key.toLowerCase() === 'a') {
+        keys.a = false
+        if (!keys.d) firstFrame = true
+    }
+    if (e.key.toLowerCase() === 'd') {
+        keys.d = false
+        if (!keys.a) firstFrame = true
+    }
     if (e.key.toLowerCase() === 's' && keys.blocking) {
         player.speed *= 2
         player.width += 20
