@@ -2,7 +2,7 @@
 let canvas = document.getElementById("gameWindow");
 let ctx = canvas.getContext("2d");
 
-const createImage = function(src, x, y, w, h, health, damage, defense, speed, stamina, stance, idle, rWalk, lWalk) {
+const createImage = function(src, x, y, w, h, health, stamina, damage, defense, speed, stamina, stance, idle, rWalk, lWalk) {
     const img = new Image();
     img.src = src
     img.xloc = x
@@ -10,6 +10,7 @@ const createImage = function(src, x, y, w, h, health, damage, defense, speed, st
     img.width = w;
     img.height = h;
     img.health = health
+    img.stamina = stamina
     img.damage = damage
     img.defense = defense
     img.speed = speed
@@ -21,8 +22,8 @@ const createImage = function(src, x, y, w, h, health, damage, defense, speed, st
 }
 
 let playerImage = "Resources/Player/player.png"
-player = createImage(playerImage, 100, 340, 140, 200, 100, 3, 10, 2, 100, "idle")
-enemy = createImage("Resources/Enemy/enemy.png", 700, 340, 140, 200, 100, 10, 10, 2, 100, "idle")
+player = createImage(playerImage, 100, 340, 140, 200, 100, 100, 3, 10, 2, 100, "idle")
+enemy = createImage("Resources/Enemy/enemy.png", 700, 340, 140, 200, 100, 100, 10, 10, 2, 100, "idle")
 
 const playerIdleImage = new Image();
 playerIdleImage.src = 'Resources/Player/PlayerIdle.png'
@@ -52,7 +53,7 @@ function animateGame() {
     checkPunching()
     checkBlocking()
     animateHealth()
-
+    animateStamina()
     let a = requestAnimationFrame(animateGame);
 }
 
@@ -112,31 +113,54 @@ function checkPlayerFrame(character) {
 let playerHealthTX = 435
 let playerHealthBX = 395
 
+let playerStaminaTX = 355
+let playerStaminaBX = 330
+
 let enemyHealthTX = 525
 let enemyHealthBX = 565
+
+let enemyStaminaTX = 605
+let enemyStaminaBX = 630
 
 let playerHurtIndicatorTX = 435
 let playerHurtIndicatorBX = 395
 
+let playerStaminaIndicatorTX = 355
+let playerStaminaIndicatorBX = 330
+
 let enemyHurtIndicatorTX = 525
 let enemyHurtIndicatorBX = 565
+
+let enemyStaminaIndicatorTX = 605
+let enemyStaminaIndicatorBX = 630
 
 function animateHealth() {
     //ratio for player is 100 to 435
     playerHealthTX += ((player.health * 4.35) - playerHealthTX) * 0.1
     playerHealthBX = playerHealthTX - 40
 
-    //ratio for enemy is 100 to 525, goes in reverse though
-    //525 = 525 - (420 - 525) * 0.1
-    enemyHealthTX += (((200 - enemy.health) * 5.25) - enemyHealthTX) * 0.04
+    enemyHealthTX += ((955 - (enemy.health * 4.3)) - enemyHealthTX) * 0.1
     enemyHealthBX = enemyHealthTX + 40
-
 
     playerHurtIndicatorTX += ((player.health * 4.35) - playerHurtIndicatorTX) * 0.025
     playerHurtIndicatorBX = playerHurtIndicatorTX - 40
 
-    enemyHurtIndicatorTX += (((200 - enemy.health) * 5.25) - enemyHurtIndicatorTX) * 0.025
+    enemyHurtIndicatorTX += ((955 - (enemy.health * 4.3)) - enemyHurtIndicatorTX) * 0.025
     enemyHurtIndicatorBX = enemyHurtIndicatorTX + 40
+}
+
+function animateStamina() {
+    playerStaminaTX += ((player.stamina * 3.55) - playerStaminaTX) * 0.1
+    playerStaminaBX = playerStaminaTX - 25
+
+    enemyStaminaTX += ((955 - (enemy.stamina * 3.5)) - enemyStaminaTX) * 0.1
+    enemyStaminaBX = enemyStaminaTX + 25
+
+    playerStaminaIndicatorTX += ((player.stamina * 3.55) - playerStaminaIndicatorTX) * 0.025
+    playerStaminaIndicatorBX = playerStaminaIndicatorTX - 25
+
+    enemyStaminaIndicatorTX += ((955 - (enemy.stamina * 3.5)) - enemyStaminaIndicatorTX) * 0.025
+    enemyStaminaIndicatorBX = enemyStaminaIndicatorTX + 25
 }
 
 function drawBars() {
@@ -232,7 +256,7 @@ function drawBars() {
     ctx.closePath();
     ctx.fill()
 
-    ctx.fillStyle = "#49ff2f"
+    ctx.fillStyle = "#474747"
 
     ctx.beginPath(); // stamina bar player
     ctx.moveTo(5, 54);
@@ -242,13 +266,51 @@ function drawBars() {
     ctx.closePath();
     ctx.fill()
 
-    ctx.beginPath(); // stamina bar player
+    ctx.beginPath(); // stamina bar enemy
     ctx.moveTo(955, 54);
     ctx.lineTo(605, 54);
     ctx.lineTo(630, 79);
     ctx.lineTo(955, 79);
     ctx.closePath();
     ctx.fill()
+
+    ctx.fillStyle = "#ff4141"
+
+    ctx.beginPath(); // stamina bar player
+    ctx.moveTo(5, 54);
+    ctx.lineTo(playerStaminaIndicatorTX, 54);
+    ctx.lineTo(playerStaminaIndicatorBX, 79);
+    ctx.lineTo(5, 79);
+    ctx.closePath();
+    ctx.fill()
+
+    ctx.beginPath(); // stamina bar enemy
+    ctx.moveTo(955, 54);
+    ctx.lineTo(enemyStaminaIndicatorTX, 54);
+    ctx.lineTo(enemyStaminaIndicatorBX, 79);
+    ctx.lineTo(955, 79);
+    ctx.closePath();
+    ctx.fill()
+
+    ctx.fillStyle = "#49ff2f"
+
+    ctx.beginPath(); // stamina bar player
+    ctx.moveTo(5, 54);
+    ctx.lineTo(playerStaminaTX, 54);
+    ctx.lineTo(playerStaminaBX, 79);
+    ctx.lineTo(5, 79);
+    ctx.closePath();
+    ctx.fill()
+
+    ctx.beginPath(); // stamina bar enemy
+    ctx.moveTo(955, 54);
+    ctx.lineTo(enemyStaminaTX, 54);
+    ctx.lineTo(enemyStaminaBX, 79);
+    ctx.lineTo(955, 79);
+    ctx.closePath();
+    ctx.fill()
+
+
 }
 
 function movePlayers() {
@@ -271,7 +333,7 @@ let dodgeHold = 0
 let isDodging = false
 let canDodge = true
 let dodgeCooldown = 0
-// dodgeHold, isDodging, canDodge, dodgeCooldown
+
 function checkDodge() {
     if (isDodging) {
         dodgeHold -= 1
