@@ -136,13 +136,13 @@ let enemyStaminaIndicatorBX = 630
 
 function animateHealth() {
     //ratio for player is 100 to 435
-    playerHealthTX += ((player.health * 4.35) - playerHealthTX) * 0.1
+    playerHealthTX += (5 + (player.health * 4.3) - playerHealthTX) * 0.1
     playerHealthBX = playerHealthTX - 40
 
     enemyHealthTX += ((955 - (enemy.health * 4.3)) - enemyHealthTX) * 0.1
     enemyHealthBX = enemyHealthTX + 40
 
-    playerHurtIndicatorTX += ((player.health * 4.35) - playerHurtIndicatorTX) * 0.025
+    playerHurtIndicatorTX += (5 + (player.health * 4.3) - playerHurtIndicatorTX) * 0.025
     playerHurtIndicatorBX = playerHurtIndicatorTX - 40
 
     enemyHurtIndicatorTX += ((955 - (enemy.health * 4.3)) - enemyHurtIndicatorTX) * 0.025
@@ -150,13 +150,13 @@ function animateHealth() {
 }
 
 function animateStamina() {
-    playerStaminaTX += ((player.stamina * 3.55) - playerStaminaTX) * 0.1
+    playerStaminaTX += (5 + (player.stamina * 3.5) - playerStaminaTX) * 0.1
     playerStaminaBX = playerStaminaTX - 25
 
     enemyStaminaTX += ((955 - (enemy.stamina * 3.5)) - enemyStaminaTX) * 0.1
     enemyStaminaBX = enemyStaminaTX + 25
 
-    playerStaminaIndicatorTX += ((player.stamina * 3.55) - playerStaminaIndicatorTX) * 0.025
+    playerStaminaIndicatorTX += (5 + (player.stamina * 3.5) - playerStaminaIndicatorTX) * 0.025
     playerStaminaIndicatorBX = playerStaminaIndicatorTX - 25
 
     enemyStaminaIndicatorTX += ((955 - (enemy.stamina * 3.5)) - enemyStaminaIndicatorTX) * 0.025
@@ -237,8 +237,7 @@ function drawBars() {
     ctx.fill();
 
     ctx.fillStyle = "#000000" //cutoff
-    ctx.fillRect(0, 7, 5, 40);
-    ctx.fillRect(955, 7, 5, 40);
+
 
     ctx.beginPath(); // stamina bar player
     ctx.moveTo(0, 52);
@@ -310,7 +309,9 @@ function drawBars() {
     ctx.closePath();
     ctx.fill()
 
-
+    ctx.fillStyle = "#000000" //cutoff
+    ctx.fillRect(0, 7, 5, 77);
+    ctx.fillRect(955, 7, 5, 77);
 }
 
 function movePlayers() {
