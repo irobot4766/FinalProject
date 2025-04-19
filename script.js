@@ -2,7 +2,7 @@
 let canvas = document.getElementById("gameWindow");
 let ctx = canvas.getContext("2d");
 
-const createImage = function(src, x, y, w, h, health, stamina, damage, defense, speed, stamina, stance, idle, rWalk, lWalk) {
+const createImage = function(src, x, y, w, h, health, stamina, damage, defense, speed, stance) {
     const img = new Image();
     img.src = src
     img.xloc = x
@@ -14,25 +14,32 @@ const createImage = function(src, x, y, w, h, health, stamina, damage, defense, 
     img.damage = damage
     img.defense = defense
     img.speed = speed
-    img.stamina = stamina
     img.stance = stance
 
+    img.idleImage = new Image()
+    img.rightWalkImage = new Image()
+    img.leftWalkImage = new Image()
+    img.jabImage = new Image()
+    img.image = img.idleImage
+
+    img.totalAnimationFrames = 2
+    img.animationFrame = 0
+    img.frame = 0
 
     return img;
 }
 
-let playerImage = "Resources/Player/player.png"
-player = createImage(playerImage, 100, 340, 140, 200, 100, 100, 3, 10, 2, 100, "idle")
-enemy = createImage("Resources/Enemy/enemy.png", 700, 340, 140, 200, 100, 100, 10, 10, 2, 100, "idle")
+player = createImage("Resources/Player/player.png", 100, 340, 200, 200, 100, 100, 3, 10, 2, "idle")
 
-const playerIdleImage = new Image();
-playerIdleImage.src = 'Resources/Player/PlayerIdle.png'
+player.idleImage.src = 'Resources/Player/PlayerIdle.png'
+player.rightWalkImage.src = 'Resources/Player/PlayerRWalk.png'
+player.leftWalkImage.src = 'Resources/Player/PlayerLWalk.png'
+player.jabImage.src = 'Resources/Player/PlayerJab.png'
 
-const playerRightWalkImage = new Image();
-playerRightWalkImage.src = 'Resources/Player/PlayerRWalk.png'
+enemy = createImage("Resources/Player/player.png", 700, 340, 200, 200, 100, 100, 10, 10, 2, "idle")
 
-const playerLeftWalkImage = new Image();
-playerLeftWalkImage.src = 'Resources/Player/PlayerLWalk.png'
+enemy.idleImage.src = 'Resources/Enemy/enemyIdle.png'
+
 
 
 function initialize() {
@@ -63,51 +70,61 @@ function clear() {
 }
 
 function drawPlayers() {
+    checkPlayerFrame(enemy)
+
     checkPlayerFrame(player)
     // player src / src x / src y / src width / src height / player x / player y / player width / player height
-    ctx.drawImage(playerImage, 140 * (playerAnimationFrame%playerTotalAnimationFrames), 0, 140, 200, player.xloc, player.yloc, player.width, player.height)
-    ctx.drawImage(enemy, enemy.xloc, enemy.yloc, enemy.width, enemy.height)
+    ctx.drawImage(player.image, 200 * (player.animationFrame%player.totalAnimationFrames), 0, 200, 200, player.xloc, player.yloc, player.width, player.height)
+    ctx.drawImage(enemy.image, 200 * (enemy.animationFrame%enemy.totalAnimationFrames), 0, 200, 200, enemy.xloc, enemy.yloc, enemy.width, enemy.height)
 }
 
-let playerTotalAnimationFrames = 2
-let playerAnimationFrame = 1
-let playerFrame = 0
 function checkPlayerFrame(character) {
-    if (!keys.d && !keys.a) character.stance = "idle"
+    if (!keys.d && !keys.a && !isPunching) character.stance = "idle"
 
     if (character.stance === "idle") {
-        playerTotalAnimationFrames = 2
-        playerImage = playerIdleImage
-        playerFrame += 1
-        if (playerFrame > 25) {
-            playerAnimationFrame += 1
-            playerFrame = 0
+        character.totalAnimationFrames = 2
+        character.image = character.idleImage
+        character.frame += 1
+        if (character.frame > 25) {
+            character.animationFrame += 1
+            character.frame = 0
         }
     }
     if (character.stance === "rightWalk") {
-        playerTotalAnimationFrames = 10
-        playerImage = playerRightWalkImage
-        if (firstFrame) {
-            playerFrame = 0
-            playerAnimationFrame = 0
-            firstFrame = false
+        character.totalAnimationFrames = 10
+        character.image = character.rightWalkImage
+        if (character.frame >= 4) {
+            character.animationFrame += 1
+            character.frame = 0
         }
-        if (playerFrame >= 4) {
-            playerAnimationFrame += 1
-            playerFrame = 0
-        }
-        playerFrame += 1
+        character.frame += 1
     }
     if (character.stance === "leftWalk") {
-        playerTotalAnimationFrames = 10
-        playerImage = playerLeftWalkImage
+        character.totalAnimationFrames = 10
+        character.image = character.leftWalkImage
 
-        playerFrame += 1
-        if (playerFrame >= 4) {
-            playerAnimationFrame += 1
-            playerFrame = 0
+        character.frame += 1
+        if (character.frame >= 4) {
+            character.animationFrame += 1
+            character.frame = 0
         }
     }
+
+    if (character.stance === "jab") {
+        character.totalAnimationFrames = 4
+        character.image = character.jabImage
+        if (firstFrame) {
+            character.frame = 0
+            character.animationFrame = 0
+            firstFrame = false
+        }
+        if (character.frame >= 6) {
+            character.animationFrame += 1
+            character.frame = 0
+        }
+        character.frame += 1
+    }
+
 }
 
 let playerHealthTX = 435
@@ -315,17 +332,20 @@ function drawBars() {
 }
 
 function movePlayers() {
-    if (keys.a) player.xloc -= player.speed
-    if (keys.d) {
-        player.xloc += player.speed
-        if (player.xloc + player.width > enemy.xloc) {
-            player.xloc -= player.speed
+    if (!isPunching) {
+        if (keys.a) player.xloc -= player.speed
+        if (keys.d) {
+            player.xloc += player.speed
+            if (player.xloc + player.width - 70 > enemy.xloc) {
+                player.xloc -= player.speed
+            }
         }
     }
+
 }
 
 function checkCollision() {
-    if (enemy.xloc < player.xloc + player.width) {
+    if (enemy.xloc < player.xloc + player.width - 70) {
         enemy.xloc += enemy.speed
     }
 }
@@ -379,6 +399,7 @@ function checkPunching() {
         punchHold -= 1
         if (punchHold === 0) {
             punchCooldown = 30
+            firstFrame = true
             isPunching = false
             canDodge = true
             canBlock = true
@@ -406,6 +427,22 @@ function checkBlocking() {
 
 function lPunch() {
     if (canPunch) {
+        console.log("player 1 jabbed")
+        canBlock = false
+        firstFrame = true
+        punchHold = 24
+        isPunching = true
+        canPunch = false
+        canDodge = false
+        player.stance = "jab"
+        if (player.xloc + player.width - 60 >= enemy.xloc) {
+            enemy.health -= player.damage * 0.75
+        }
+    }
+}
+
+function rPunch() {
+    if (canPunch) {
         console.log("player 1 crossed")
         canBlock = false
         punchHold = 10
@@ -413,23 +450,8 @@ function lPunch() {
         canPunch = false
         canDodge = false
 
-        if (player.xloc + player.width >= enemy.xloc - 75) {
-            enemy.health -= player.damage
-        }
-    }
-}
-
-function rPunch() {
-    if (canPunch) {
-        console.log("player 1 jabbed")
-        canBlock = false
-        punchHold = 10
-        isPunching = true
-        canPunch = false
-        canDodge = false
-
         if (player.xloc + player.width >= enemy.xloc - 85) {
-            enemy.health -= player.damage * 0.75
+            enemy.health -= player.damage
         }
     }
 }
@@ -449,23 +471,24 @@ function hook() {
     }
 }
 
-
+let yes = true
 let firstFrame = true
 document.addEventListener("keydown", function(e) {
     if (e.key.toLowerCase() === 'a') {
-        keys.a = true
-        keys.d = false
-        player.stance = "leftWalk"
-        if (firstFrame) {
-            playerFrame = 0
-            playerAnimationFrame = 0
-            firstFrame = false
+        if (!isPunching) {
+            keys.a = true
+            keys.d = false
+            player.stance = "leftWalk"
         }
+
     }
     if (e.key.toLowerCase() === 'd') {
-        keys.a = false
-        keys.d = true
-        player.stance = "rightWalk"
+        if (!isPunching) {
+            keys.a = false
+            keys.d = true
+            player.stance = "rightWalk"
+        }
+
 
     }
     if (e.key === ' ') dodge()
@@ -478,7 +501,11 @@ document.addEventListener("keydown", function(e) {
         }
         yes = false
     }
-    if (e.key.toLowerCase() === 'k') lPunch()
+    if (e.key.toLowerCase() === 'k') {
+        keys.a = false
+        keys.d = false
+        lPunch()
+    }
     if (e.key.toLowerCase() === 'l') rPunch()
     if (e.key.toLowerCase() === 'm') hook()
 
@@ -489,11 +516,11 @@ document.addEventListener("keydown", function(e) {
 document.addEventListener("keyup", function(e) {
     if (e.key.toLowerCase() === 'a') {
         keys.a = false
-        if (!keys.d) firstFrame = true
+        if (!keys.d && !isPunching) firstFrame = true
     }
     if (e.key.toLowerCase() === 'd') {
         keys.d = false
-        if (!keys.a) firstFrame = true
+        if (!keys.a && !isPunching) firstFrame = true
     }
     if (e.key.toLowerCase() === 's' && keys.blocking) {
         player.speed *= 2
