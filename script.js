@@ -354,6 +354,17 @@ function drawBars() {
     ctx.fillStyle = "#000000" //cutoff
     ctx.fillRect(0, 7, 5, 77);
     ctx.fillRect(955, 7, 5, 77);
+
+    ctx.fillStyle = "#ffffff" //cutoff
+
+    ctx.beginPath()
+    ctx.moveTo(450, 2);
+    ctx.lineTo(520, 2);
+    ctx.lineTo(560, 52);
+    ctx.lineTo(400, 52);
+    ctx.closePath();
+    ctx.fill()
+
 }
 
 function movePlayers() {
@@ -503,23 +514,16 @@ let yes = true
 let firstFrame = true
 document.addEventListener("keydown", function(e) {
     if (e.key.toLowerCase() === 'a') {
-        if (!player.isPunching) {
-            player.keys.a = true
-            player.keys.d = false
-            player.stance = "leftWalk"
-        }
+        player.keys.a = true
+        player.keys.d = false
 
     }
     if (e.key.toLowerCase() === 'd') {
-        if (!player.isPunching) {
-            player.keys.a = false
-            player.keys.d = true
-            player.stance = "rightWalk"
-        }
-
+        player.keys.a = false
+        player.keys.d = true
 
     }
-    if (e.key === ' ') dodge()
+    if (e.key === 'f') dodge()
     if (e.key.toLowerCase() === 's' && canBlock) {
         if (!player.keys.blocking) {
             player.speed /= 2
@@ -555,4 +559,5 @@ document.addEventListener("keyup", function(e) {
         isBlocking = false
     }
 })
+
 
