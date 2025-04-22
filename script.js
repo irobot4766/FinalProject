@@ -26,17 +26,31 @@ const createImage = function(src, x, y, w, h, health, stamina, damage, defense, 
     img.animationFrame = 0
     img.frame = 0
 
+    img.canPunch = true
+    img.isPunching = false
+    img.punchHold = 0
+    img.punchFrames = 0
+    img.punchHit = 0
+    img.punchCooldown = 0
+    img.damageMultiplier = 1
+    img.punchDistance = 60
+
+    img.keys = {
+        a: false,
+        d: false,
+        blocking: false
+    }
     return img;
 }
 
-player = createImage("Resources/Player/player.png", 100, 340, 200, 200, 100, 100, 3, 10, 2, "idle")
+player = createImage("Resources/Player/player.png", 100, 240, 200, 200, 100, 100, 3, 10, 2, "idle")
 
 player.idleImage.src = 'Resources/Player/PlayerIdle.png'
 player.rightWalkImage.src = 'Resources/Player/PlayerRWalk.png'
 player.leftWalkImage.src = 'Resources/Player/PlayerLWalk.png'
 player.jabImage.src = 'Resources/Player/PlayerJab.png'
 
-enemy = createImage("Resources/Player/player.png", 700, 340, 200, 200, 100, 100, 10, 10, 2, "idle")
+enemy = createImage("Resources/Enemy/enemy.png", 700, 240, 200, 200, 100, 100, 10, 10, 2, "idle")
 
 enemy.idleImage.src = 'Resources/Enemy/enemyIdle.png'
 
@@ -61,25 +75,36 @@ function animateGame() {
     checkBlocking()
     animateHealth()
     animateStamina()
+    staminaRegen()
     let a = requestAnimationFrame(animateGame);
 }
 
+let background = new Image()
+background.src = "Resources/Background.png"
 function clear() {
-    ctx.fillStyle = "#ffffff"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(background, 76, 0, 960, 540, 0, 0, 960, 540)
 }
 
 function drawPlayers() {
     checkPlayerFrame(enemy)
-
     checkPlayerFrame(player)
     // player src / src x / src y / src width / src height / player x / player y / player width / player height
     ctx.drawImage(player.image, 200 * (player.animationFrame%player.totalAnimationFrames), 0, 200, 200, player.xloc, player.yloc, player.width, player.height)
     ctx.drawImage(enemy.image, 200 * (enemy.animationFrame%enemy.totalAnimationFrames), 0, 200, 200, enemy.xloc, enemy.yloc, enemy.width, enemy.height)
 }
 
+function staminaRegen() {
+    player.stamina += .1
+    if (player.stamina > 100) player.stamina = 100
+    enemy.stamina += .1
+    if (enemy.stamina > 100) enemy.stamina = 100
+
+}
+
 function checkPlayerFrame(character) {
-    if (!keys.d && !keys.a && !isPunching) character.stance = "idle"
+    if (!character.keys.d && !character.keys.a && !character.isPunching) character.stance = "idle"
+    if (character.keys.d && !character.keys.a && !character.isPunching) character.stance = "rightWalk"
+    if (character.keys.a && !character.keys.d && !character.isPunching) character.stance = "leftWalk"
 
     if (character.stance === "idle") {
         character.totalAnimationFrames = 2
@@ -118,7 +143,7 @@ function checkPlayerFrame(character) {
             character.animationFrame = 0
             firstFrame = false
         }
-        if (character.frame >= 6) {
+        if (character.frame >= 4) {
             character.animationFrame += 1
             character.frame = 0
         }
@@ -332,9 +357,9 @@ function drawBars() {
 }
 
 function movePlayers() {
-    if (!isPunching) {
-        if (keys.a) player.xloc -= player.speed
-        if (keys.d) {
+    if (!player.isPunching) {
+        if (player.keys.a) player.xloc -= player.speed
+        if (player.keys.d) {
             player.xloc += player.speed
             if (player.xloc + player.width - 70 > enemy.xloc) {
                 player.xloc -= player.speed
@@ -363,7 +388,7 @@ function checkDodge() {
             player.yloc -= 100
             isDodging = false
             dodgeCooldown = 60
-            canPunch = true
+            player.canPunch = true
             canBlock = true
         }
     }
@@ -385,31 +410,34 @@ function dodge() {
         dodgeHold = 15
         isDodging = true
         canDodge = false
-        canPunch = false
+        player.canPunch = false
     }
 }
 
-let canPunch = true
-let isPunching = false
-let punchHold = 0
-let punchCooldown = 0
+function dealDamage(character) {
+    if (player.xloc + player.width - player.punchDistance >= enemy.xloc) {
+        enemy.health -= player.damage * player.damageMultiplier
+    }
+}
 
 function checkPunching() {
-    if (isPunching) {
-        punchHold -= 1
-        if (punchHold === 0) {
-            punchCooldown = 30
+    if (player.isPunching) {
+        player.punchHold -= 1
+        if (player.punchHold === 0) {
+            player.punchCooldown = 10
             firstFrame = true
-            isPunching = false
+            player.isPunching = false
             canDodge = true
             canBlock = true
         }
     }
 
-    if (!canPunch) {
-        punchCooldown -= 1
-        if (punchCooldown === 0) {
-            canPunch = true
+    if (player.punchFrames - player.punchHit === player.punchHold && player.isPunching) dealDamage(player)
+
+    if (!player.canPunch) {
+        player.punchCooldown -= 1
+        if (player.punchCooldown === 0) {
+            player.canPunch = true
         }
     }
 }
@@ -420,54 +448,54 @@ function checkBlocking() {
     if (!canBlock && isBlocking) {
         player.speed *= 2
         player.width += 20
-        keys.blocking = false
+        player.keys.blocking = false
         isBlocking = false
     }
 }
 
 function lPunch() {
-    if (canPunch) {
-        console.log("player 1 jabbed")
+    if (player.canPunch && player.stamina > 15) {
         canBlock = false
         firstFrame = true
-        punchHold = 24
-        isPunching = true
-        canPunch = false
+        player.punchHold = 16
+        player.punchFrames = player.punchHold
+        player.punchHit = 10
+        player.isPunching = true
+        player.canPunch = false
         canDodge = false
         player.stance = "jab"
-        if (player.xloc + player.width - 60 >= enemy.xloc) {
-            enemy.health -= player.damage * 0.75
-        }
+        player.damageMultiplier = 0.75
+        player.stamina -= 15
     }
 }
 
 function rPunch() {
-    if (canPunch) {
+    if (player.canPunch && player.stamina > 25) {
         console.log("player 1 crossed")
         canBlock = false
-        punchHold = 10
-        isPunching = true
-        canPunch = false
+        player.punchHold = 24
+        player.punchFrames = player.punchHold
+        player.punchHit = 10 // change according to actual frame once animated
+        player.isPunching = true
+        player.canPunch = false
         canDodge = false
-
-        if (player.xloc + player.width >= enemy.xloc - 85) {
-            enemy.health -= player.damage
-        }
+        player.damageMultiplier = 1
+        player.stamina -= 25
     }
 }
 
 function hook() {
-    if (canPunch) {
+    if (player.canPunch && player.stamina > 35) {
         console.log("player 1 hooked")
         canBlock = false
-        punchHold = 20
-        isPunching = true
-        canPunch = false
+        player.punchHold = 36
+        player.punchFrames = player.punchHold
+        player.punchHit = 24 // change according to actual frame once animated
+        player.isPunching = true
+        player.canPunch = false
         canDodge = false
-
-        if (player.xloc + player.width >= enemy.xloc - 40) {
-            enemy.health -= player.damage * 2
-        }
+        player.damageMultiplier = 1.5
+        player.stamina -= 35
     }
 }
 
@@ -475,17 +503,17 @@ let yes = true
 let firstFrame = true
 document.addEventListener("keydown", function(e) {
     if (e.key.toLowerCase() === 'a') {
-        if (!isPunching) {
-            keys.a = true
-            keys.d = false
+        if (!player.isPunching) {
+            player.keys.a = true
+            player.keys.d = false
             player.stance = "leftWalk"
         }
 
     }
     if (e.key.toLowerCase() === 'd') {
-        if (!isPunching) {
-            keys.a = false
-            keys.d = true
+        if (!player.isPunching) {
+            player.keys.a = false
+            player.keys.d = true
             player.stance = "rightWalk"
         }
 
@@ -493,17 +521,15 @@ document.addEventListener("keydown", function(e) {
     }
     if (e.key === ' ') dodge()
     if (e.key.toLowerCase() === 's' && canBlock) {
-        if (!keys.blocking) {
+        if (!player.keys.blocking) {
             player.speed /= 2
             player.width -= 20
-            keys.blocking = true
+            player.keys.blocking = true
             isBlocking = true
         }
         yes = false
     }
     if (e.key.toLowerCase() === 'k') {
-        keys.a = false
-        keys.d = false
         lPunch()
     }
     if (e.key.toLowerCase() === 'l') rPunch()
@@ -515,23 +541,18 @@ document.addEventListener("keydown", function(e) {
 
 document.addEventListener("keyup", function(e) {
     if (e.key.toLowerCase() === 'a') {
-        keys.a = false
-        if (!keys.d && !isPunching) firstFrame = true
+        player.keys.a = false
+        if (!player.keys.d && !player.isPunching) firstFrame = true
     }
     if (e.key.toLowerCase() === 'd') {
-        keys.d = false
-        if (!keys.a && !isPunching) firstFrame = true
+        player.keys.d = false
+        if (!player.keys.a && !player.isPunching) firstFrame = true
     }
-    if (e.key.toLowerCase() === 's' && keys.blocking) {
+    if (e.key.toLowerCase() === 's' && player.keys.blocking) {
         player.speed *= 2
         player.width += 20
-        keys.blocking = false
+        player.keys.blocking = false
         isBlocking = false
     }
 })
 
-keys = {
-    a: false,
-    d: false,
-    blocking: false
-}
