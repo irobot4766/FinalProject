@@ -209,72 +209,72 @@ function drawBars() {
     ctx.fillStyle = "#000000"
 
     ctx.beginPath(); // health bar border player
-    ctx.moveTo(0, 2);
-    ctx.lineTo(450, 2);
-    ctx.lineTo(400, 52);
-    ctx.lineTo(0, 52);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(450, 0);
+    ctx.lineTo(400, 50);
+    ctx.lineTo(0, 50);
     ctx.closePath();
     ctx.fill()
 
     ctx.beginPath(); // health bar border enemy
-    ctx.moveTo(960, 2);
-    ctx.lineTo(510, 2);
-    ctx.lineTo(560, 52);
-    ctx.lineTo(960, 52);
+    ctx.moveTo(960, 0);
+    ctx.lineTo(510, 0);
+    ctx.lineTo(560, 50);
+    ctx.lineTo(960, 50);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = "#474747"
 
     ctx.beginPath(); // full health bar enemy
-    ctx.moveTo(5, 7);
-    ctx.lineTo(435, 7);
-    ctx.lineTo(395, 47);
-    ctx.lineTo(5, 47);
+    ctx.moveTo(5, 5);
+    ctx.lineTo(435, 5);
+    ctx.lineTo(395, 45);
+    ctx.lineTo(5, 45);
     ctx.closePath();
     ctx.fill()
 
     ctx.beginPath(); // full health bar enemy
-    ctx.moveTo(955, 7);
-    ctx.lineTo(525, 7);
-    ctx.lineTo(565, 47);
-    ctx.lineTo(955, 47);
+    ctx.moveTo(955, 5);
+    ctx.lineTo(525, 5);
+    ctx.lineTo(565, 45);
+    ctx.lineTo(955, 45);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = "#ff4141"
 
     ctx.beginPath(); // real health bar player
-    ctx.moveTo(5, 7);
-    ctx.lineTo(playerHurtIndicatorTX, 7);
-    ctx.lineTo(playerHurtIndicatorBX, 47);
-    ctx.lineTo(5, 47);
+    ctx.moveTo(5, 5);
+    ctx.lineTo(playerHurtIndicatorTX, 5);
+    ctx.lineTo(playerHurtIndicatorBX, 45);
+    ctx.lineTo(5, 45);
     ctx.closePath();
     ctx.fill()
 
     ctx.beginPath(); // real health bar enemy
-    ctx.moveTo(955, 7);
-    ctx.lineTo(enemyHurtIndicatorTX, 7);
-    ctx.lineTo(enemyHurtIndicatorBX, 47);
-    ctx.lineTo(955, 47);
+    ctx.moveTo(955, 5);
+    ctx.lineTo(enemyHurtIndicatorTX, 5);
+    ctx.lineTo(enemyHurtIndicatorBX, 45);
+    ctx.lineTo(955, 45);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = "#cc0000"
 
     ctx.beginPath(); // real health bar player
-    ctx.moveTo(5, 7);
-    ctx.lineTo(playerHealthTX, 7);
-    ctx.lineTo(playerHealthBX, 47);
-    ctx.lineTo(5, 47);
+    ctx.moveTo(5, 5);
+    ctx.lineTo(playerHealthTX, 5);
+    ctx.lineTo(playerHealthBX, 45);
+    ctx.lineTo(5, 45);
     ctx.closePath();
     ctx.fill()
 
     ctx.beginPath(); // real health bar enemy
-    ctx.moveTo(955, 7);
-    ctx.lineTo(enemyHealthTX, 7);
-    ctx.lineTo(enemyHealthBX, 47);
-    ctx.lineTo(955, 47);
+    ctx.moveTo(955, 5);
+    ctx.lineTo(enemyHealthTX, 5);
+    ctx.lineTo(enemyHealthBX, 45);
+    ctx.lineTo(955, 45);
     ctx.closePath();
     ctx.fill();
 
@@ -282,89 +282,95 @@ function drawBars() {
 
 
     ctx.beginPath(); // stamina bar player
-    ctx.moveTo(0, 52);
-    ctx.lineTo(365, 52);
-    ctx.lineTo(333, 85);
-    ctx.lineTo(0, 85);
+    ctx.moveTo(0, 50);
+    ctx.lineTo(365, 50);
+    ctx.lineTo(333, 83);
+    ctx.lineTo(0, 83);
     ctx.closePath();
     ctx.fill()
 
     ctx.beginPath(); // stamina bar player
-    ctx.moveTo(960, 52);
-    ctx.lineTo(595, 52);
-    ctx.lineTo(625, 85);
-    ctx.lineTo(960, 85);
+    ctx.moveTo(960, 50);
+    ctx.lineTo(595, 50);
+    ctx.lineTo(625, 83);
+    ctx.lineTo(960, 83);
     ctx.closePath();
     ctx.fill()
 
     ctx.fillStyle = "#474747"
 
     ctx.beginPath(); // stamina bar player
-    ctx.moveTo(5, 54);
-    ctx.lineTo(355, 54);
-    ctx.lineTo(330, 79);
-    ctx.lineTo(5, 79);
+    ctx.moveTo(5, 52);
+    ctx.lineTo(355, 52);
+    ctx.lineTo(330, 77);
+    ctx.lineTo(5, 77);
     ctx.closePath();
     ctx.fill()
 
     ctx.beginPath(); // stamina bar enemy
-    ctx.moveTo(955, 54);
-    ctx.lineTo(605, 54);
-    ctx.lineTo(630, 79);
-    ctx.lineTo(955, 79);
+    ctx.moveTo(955, 52);
+    ctx.lineTo(605, 52);
+    ctx.lineTo(630, 77);
+    ctx.lineTo(955, 77);
     ctx.closePath();
     ctx.fill()
 
     ctx.fillStyle = "#ff4141"
 
     ctx.beginPath(); // stamina bar player
-    ctx.moveTo(5, 54);
-    ctx.lineTo(playerStaminaIndicatorTX, 54);
-    ctx.lineTo(playerStaminaIndicatorBX, 79);
-    ctx.lineTo(5, 79);
+    ctx.moveTo(5, 52);
+    ctx.lineTo(playerStaminaIndicatorTX, 52);
+    ctx.lineTo(playerStaminaIndicatorBX, 77);
+    ctx.lineTo(5, 77);
     ctx.closePath();
     ctx.fill()
 
     ctx.beginPath(); // stamina bar enemy
-    ctx.moveTo(955, 54);
-    ctx.lineTo(enemyStaminaIndicatorTX, 54);
-    ctx.lineTo(enemyStaminaIndicatorBX, 79);
-    ctx.lineTo(955, 79);
+    ctx.moveTo(955, 52);
+    ctx.lineTo(enemyStaminaIndicatorTX, 52);
+    ctx.lineTo(enemyStaminaIndicatorBX, 77);
+    ctx.lineTo(955, 77);
     ctx.closePath();
     ctx.fill()
 
     ctx.fillStyle = "#49ff2f"
 
     ctx.beginPath(); // stamina bar player
-    ctx.moveTo(5, 54);
-    ctx.lineTo(playerStaminaTX, 54);
-    ctx.lineTo(playerStaminaBX, 79);
-    ctx.lineTo(5, 79);
+    ctx.moveTo(5, 52);
+    ctx.lineTo(playerStaminaTX, 52);
+    ctx.lineTo(playerStaminaBX, 77);
+    ctx.lineTo(5, 77);
     ctx.closePath();
     ctx.fill()
 
     ctx.beginPath(); // stamina bar enemy
-    ctx.moveTo(955, 54);
-    ctx.lineTo(enemyStaminaTX, 54);
-    ctx.lineTo(enemyStaminaBX, 79);
-    ctx.lineTo(955, 79);
+    ctx.moveTo(955, 52);
+    ctx.lineTo(enemyStaminaTX, 52);
+    ctx.lineTo(enemyStaminaBX, 77);
+    ctx.lineTo(955, 77);
     ctx.closePath();
     ctx.fill()
 
     ctx.fillStyle = "#000000" //cutoff
-    ctx.fillRect(0, 7, 5, 77);
-    ctx.fillRect(955, 7, 5, 77);
+    ctx.fillRect(0, 7, 5, 75);
+    ctx.fillRect(955, 7, 5, 75);
 
-    ctx.fillStyle = "#ffffff" //cutoff
+    ctx.fillStyle = "#9c9c9c" //cutoff
 
     ctx.beginPath()
-    ctx.moveTo(450, 2);
-    ctx.lineTo(520, 2);
-    ctx.lineTo(560, 52);
-    ctx.lineTo(400, 52);
+    ctx.moveTo(449, 0);
+    ctx.lineTo(511, 0);
+    ctx.lineTo(561, 50);
+    ctx.lineTo(399, 50);
     ctx.closePath();
     ctx.fill()
 
+    ctx.fillStyle = "#000000" //cutoff
+
+    // try text here
+    ctx.textAlign = "center";
+    ctx.font = "45px Pixelify Sans";
+    ctx.fillText("180", canvas.width / 2, 40);
 }
 
 function movePlayers() {
@@ -523,7 +529,7 @@ document.addEventListener("keydown", function(e) {
         player.keys.d = true
 
     }
-    if (e.key === 'f') dodge()
+    if (e.key === ' ') dodge()
     if (e.key.toLowerCase() === 's' && canBlock) {
         if (!player.keys.blocking) {
             player.speed /= 2
@@ -559,5 +565,4 @@ document.addEventListener("keyup", function(e) {
         isBlocking = false
     }
 })
-
 
