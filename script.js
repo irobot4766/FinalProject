@@ -1,6 +1,9 @@
 
 let canvas = document.getElementById("gameWindow");
-let ctx = canvas.getContext("2d");
+let ctx = canvas.getContext("2d", {antialias: false});
+ctx.imageSmoothingEnabled = false;
+canvas.style.imageRendering = "pixelated"; // For modern browsers
+
 
 const createImage = function(src, x, y, w, h, health, stamina, damage, defense, speed, stance) {
     const img = new Image();
@@ -53,6 +56,9 @@ player.jabImage.src = 'Resources/Player/PlayerJab.png'
 enemy = createImage("Resources/Enemy/enemy.png", 700, 240, 200, 200, 100, 100, 10, 10, 2, "idle")
 
 enemy.idleImage.src = 'Resources/Enemy/enemyIdle.png'
+enemy.leftWalkImage.src = 'Resources/Enemy/enemyWalkLeft.png'
+enemy.rightWalkImage.src = 'Resources/Enemy/enemyWalkRight.png'
+
 
 
 
@@ -68,7 +74,8 @@ function animateGame() {
     clear()
     drawPlayers()
     drawBars()
-    movePlayers()
+    movePlayers(player)
+    movePlayers(enemy)
     checkCollision()
     checkDodge()
     checkPunching()
@@ -76,13 +83,26 @@ function animateGame() {
     animateHealth()
     animateStamina()
     staminaRegen()
+    reduceTime()
     let a = requestAnimationFrame(animateGame);
 }
 
+let time = 180
+let timeFrame = 0
+function reduceTime() {
+    timeFrame++
+    if (timeFrame === 60) time--,  timeFrame = 0
+}
+
 let background = new Image()
-background.src = "Resources/Background.png"
+background.src = "Resources/Background/background.png"
+
+let clock = new Image()
+clock.src = "Resources/Background/clock.png"
+
 function clear() {
     ctx.drawImage(background, 76, 0, 960, 540, 0, 0, 960, 540)
+    ctx.drawImage(clock, 0, 0, 258, 200, 285, 0, 387, 300)
 }
 
 function drawPlayers() {
@@ -352,44 +372,47 @@ function drawBars() {
     ctx.fill()
 
     ctx.fillStyle = "#000000" //cutoff
-    ctx.fillRect(0, 7, 5, 75);
-    ctx.fillRect(955, 7, 5, 75);
-
-    ctx.fillStyle = "#9c9c9c" //cutoff
-
-    ctx.beginPath()
-    ctx.moveTo(449, 0);
-    ctx.lineTo(511, 0);
-    ctx.lineTo(561, 50);
-    ctx.lineTo(399, 50);
-    ctx.closePath();
-    ctx.fill()
-
-    ctx.fillStyle = "#000000" //cutoff
-
+    ctx.fillRect(0, 5, 5, 75);
+    ctx.fillRect(955, 5, 5, 75);
+    //
+    // ctx.fillStyle = "#9c9c9c" //cutoff
+    //
+    // ctx.beginPath()
+    // ctx.moveTo(449, 0);
+    // ctx.lineTo(511, 0);
+    // ctx.lineTo(561, 50);
+    // ctx.lineTo(399, 50);
+    // ctx.closePath();
+    // ctx.fill()
+    //
+    ctx.fillStyle = "#b3b3b3" //cutoff
+    //
     // try text here
     ctx.textAlign = "center";
-    ctx.font = "45px Pixelify Sans";
-    ctx.fillText("180", canvas.width / 2, 40);
+    ctx.font = "60px 'Press Start 2P'";
+    ctx.fillText(time, 480, 230);
 }
 
-function movePlayers() {
-    if (!player.isPunching) {
-        if (player.keys.a) player.xloc -= player.speed
-        if (player.keys.d) {
-            player.xloc += player.speed
-            if (player.xloc + player.width - 70 > enemy.xloc) {
-                player.xloc -= player.speed
-            }
+function movePlayers(character) {
+    let speedModifier = 1
+    if (character.keys.d && character === enemy) speedModifier = 0.75
+    if (character.keys.a && character === player) speedModifier = 0.75
+    if (!character.isPunching) {
+        if (character.keys.a) character.xloc -= character.speed * speedModifier
+        if (character.keys.d) character.xloc += character.speed * speedModifier
+        if (player.xloc + player.width - 50 > enemy.xloc + 50) {
+            if (character === player && character.keys.d) player.xloc -= player.speed
+            else enemy.xloc += enemy.speed
         }
+        if (character.xloc + 30 < 0) character.xloc += character.speed //adding 30 because hitbox is not exact
+        if (character.xloc + character.width - 30 > canvas.width) character.xloc -= character.speed
     }
-
 }
 
 function checkCollision() {
-    if (enemy.xloc < player.xloc + player.width - 70) {
-        enemy.xloc += enemy.speed
-    }
+    // if (enemy.xloc < player.xloc + player.width - 70) {
+    //     enemy.xloc += enemy.speed
+    // }
 }
 
 let dodgeHold = 0
@@ -522,11 +545,14 @@ document.addEventListener("keydown", function(e) {
     if (e.key.toLowerCase() === 'a') {
         player.keys.a = true
         player.keys.d = false
-
+        enemy.keys.a = true
+        enemy.keys.d = false
     }
     if (e.key.toLowerCase() === 'd') {
         player.keys.a = false
         player.keys.d = true
+        enemy.keys.a = false
+        enemy.keys.d = true
 
     }
     if (e.key === ' ') dodge()
@@ -552,10 +578,12 @@ document.addEventListener("keydown", function(e) {
 document.addEventListener("keyup", function(e) {
     if (e.key.toLowerCase() === 'a') {
         player.keys.a = false
+        enemy.keys.a = false
         if (!player.keys.d && !player.isPunching) firstFrame = true
     }
     if (e.key.toLowerCase() === 'd') {
         player.keys.d = false
+        enemy.keys.d = false
         if (!player.keys.a && !player.isPunching) firstFrame = true
     }
     if (e.key.toLowerCase() === 's' && player.keys.blocking) {
@@ -565,4 +593,3 @@ document.addEventListener("keyup", function(e) {
         isBlocking = false
     }
 })
-
