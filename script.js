@@ -72,7 +72,13 @@ enemy.leftWalkImage.src = 'Resources/Enemy/enemyWalkLeft.png'
 enemy.rightWalkImage.src = 'Resources/enemy/enemyWalkRight.png'
 enemy.jabImage.src = 'Resources/enemy/enemyJab.png'
 
-
+let enemyStyles = {
+    moveStyle: "neutral", // either maintaining distance, closing distance, or neutral
+    idleStyle: "neutral", // either defensive w/ guard, neutral, or counter-ready
+    counterStyle: "counter", // either dodging to escape, or dodging to counter
+    attackStyle: "poke", //poke, burst, counter, pressure
+    timingStyle: "instant" //slow, pause, or instant
+}
 
 
 
