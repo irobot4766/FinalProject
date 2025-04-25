@@ -73,6 +73,7 @@ enemy.idleImage.src = 'Resources/Enemy/enemyIdle.png'
 enemy.leftWalkImage.src = 'Resources/Enemy/enemyWalkLeft.png'
 enemy.rightWalkImage.src = 'Resources/enemy/enemyWalkRight.png'
 enemy.jabImage.src = 'Resources/enemy/enemyJab.png'
+enemy.crossImage.src = 'Resources/enemy/enemyCross.png'
 
 let enemyStyles = {
     moveStyle: "neutral", // either maintaining distance, closing distance, or neutral
@@ -81,8 +82,6 @@ let enemyStyles = {
     attackStyle: "poke", //poke, burst, counter, pressure
     timingStyle: "instant" //slow, pause, or instant
 }
-
-
 
 function initialize() {
     ctx.drawImage(player, player.xloc, player.yloc, player.width, player.height)
@@ -97,6 +96,7 @@ function animateGame() {
     drawPlayers()
     drawBars()
     movePlayers(player)
+    enemyController()
     movePlayers(enemy)
     checkCollision()
     checkDodge(player)
@@ -108,15 +108,72 @@ function animateGame() {
     animateStamina()
     staminaRegen()
     reduceTime()
+    determineEnemyStyle()
     let a = requestAnimationFrame(animateGame);
 }
+
+function determineEnemyStyle() {
+    // moveStyle: "neutral", // either maintaining distance, closing distance, or neutral
+    // idleStyle: "neutral", // either defensive w/ guard, neutral, or counter-ready
+    // counterStyle: "counter", // either dodging to escape, or dodging to counter
+    // attackStyle: "poke", //poke, burst, counter, pressure
+    // timingStyle: "instant" //slow, pause, or instant
+    if (enemy.health >= player.health) {
+        if (timeFrame%60 === 0) {
+            if (Math.random() > 0.1) enemyStyles.moveStyle = "aggressive"
+            else enemyStyles.moveStyle = "neutral"
+            if (time < 90) enemyStyles.moveStyle = "aggressive"
+        }
+    } else {
+        if (time%3 === 0) {
+            if (Math.random() > 0.5) enemyStyles.moveStyle = "neutral"
+            else if (Math.random() > 0.5) enemyStyles.moveStyle = "passive"
+            else enemyStyles.moveStyle = "aggressive"
+        }
+        console.log(enemyStyles.moveStyle)
+        
+    }
+}
+
+function enemyController() {
+    if (timeFrame === 10 && enemyStyles.moveStyle === "aggressive") {
+        if (enemy.xloc - enemy.punchDistance >= player.xloc + player.width) {
+            enemy.keys.a = true
+            enemy.keys.d = false
+        }
+        let test = Math.random()
+        console.log(test)
+        if (test > 0.7) {
+            enemy.keys.a = false
+            enemy.keys.d = true
+        }
+    }
+    if (timeFrame === 10 && enemyStyles.moveStyle === "passive") {
+        enemy.keys.a = false
+        enemy.keys.d = true
+        if (enemy.xloc + enemy.width - 30 > canvas.width) {
+            enemy.keys.a = false
+            enemy.keys.d = false
+        }
+    }
+    if (timeFrame === 10 && enemyStyles.moveStyle === "neutral") {
+        if (enemy.xloc + enemy.punchDistance < canvas.width/2) {
+            enemy.keys.a = false
+            enemy.keys.d = true
+        }
+    }
+}
+
 
 let time = 180
 let timeFrame = 0
 let seconds = 0
 function reduceTime() {
     timeFrame++
-    if (timeFrame === 60) time--,  timeFrame = 0
+    if (timeFrame === 60) {
+        time--
+        timeFrame = 0
+    }
 }
 
 let background = new Image()
@@ -571,14 +628,10 @@ document.addEventListener("keydown", function(e) {
     if (e.key.toLowerCase() === 'a') {
         player.keys.a = true
         player.keys.d = false
-        enemy.keys.a = true
-        enemy.keys.d = false
     }
     if (e.key.toLowerCase() === 'd') {
         player.keys.a = false
         player.keys.d = true
-        enemy.keys.a = false
-        enemy.keys.d = true
 
     }
     if (e.key === ' ') dodge(player)
@@ -587,15 +640,15 @@ document.addEventListener("keydown", function(e) {
             player.speed /= 2
             player.width -= 20
             player.keys.blocking = true
-            isBlocking = true
+            player.isBlocking = true
         }
-        yes = false
     }
     if (e.key.toLowerCase() === 'k') {
         lPunch(player)
-        lPunch(enemy)
     }
-    if (e.key.toLowerCase() === 'l') rPunch(player)
+    if (e.key.toLowerCase() === 'l') {
+        rPunch(player)
+    }
     if (e.key.toLowerCase() === 'm') hook()
 
 
@@ -605,18 +658,16 @@ document.addEventListener("keydown", function(e) {
 document.addEventListener("keyup", function(e) {
     if (e.key.toLowerCase() === 'a') {
         player.keys.a = false
-        enemy.keys.a = false
-        if (!player.keys.d && !player.isPunching) firstFrame = true
+        if (!player.keys.d && !player.isPunching) player.firstFrame = true
     }
     if (e.key.toLowerCase() === 'd') {
         player.keys.d = false
-        enemy.keys.d = false
-        if (!player.keys.a && !player.isPunching) firstFrame = true
+        if (!player.keys.a && !player.isPunching) player.firstFrame = true
     }
     if (e.key.toLowerCase() === 's' && player.keys.blocking) {
         player.speed *= 2
         player.width += 20
         player.keys.blocking = false
-        isBlocking = false
+        player.isBlocking = false
     }
 })
