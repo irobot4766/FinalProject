@@ -23,6 +23,7 @@ const createImage = function(src, x, y, w, h, health, stamina, damage, defense, 
     img.rightWalkImage = new Image()
     img.leftWalkImage = new Image()
     img.jabImage = new Image()
+    img.crossImage = new Image()
     img.image = img.idleImage
 
     img.totalAnimationFrames = 2
@@ -64,6 +65,7 @@ player.idleImage.src = 'Resources/Player/PlayerIdle.png'
 player.rightWalkImage.src = 'Resources/Player/PlayerRWalk.png'
 player.leftWalkImage.src = 'Resources/Player/PlayerLWalk.png'
 player.jabImage.src = 'Resources/Player/PlayerJab.png'
+player.crossImage.src = 'Resources/Player/playerCross.png'
 
 enemy = createImage("Resources/Enemy/enemy.png", 700, 240, 200, 200, 100, 100, 10, 10, 2, "idle")
 
@@ -181,6 +183,21 @@ function checkPlayerFrame(character) {
     if (character.stance === "jab") {
         character.totalAnimationFrames = 4
         character.image = character.jabImage
+        if (character.firstFrame) {
+            character.frame = 0
+            character.animationFrame = 0
+            character.firstFrame = false
+        }
+        if (character.frame >= 4) {
+            character.animationFrame += 1
+            character.frame = 0
+        }
+        character.frame += 1
+    }
+
+    if (character.stance === "cross") {
+        character.totalAnimationFrames = 6
+        character.image = character.crossImage
         if (character.firstFrame) {
             character.frame = 0
             character.animationFrame = 0
@@ -466,7 +483,7 @@ function dealDamage(character) {
     if (player.xloc + player.width - player.punchDistance >= enemy.xloc && character === player) {
         enemy.health -= player.damage * player.damageMultiplier
     }
-    if (enemy.xloc - player.punchDistance <= player.xloc + player.width && character === enemy) {
+    if (enemy.xloc + player.punchDistance <= player.xloc + player.width && character === enemy) {
         player.health -= enemy.damage * enemy.damageMultiplier
     }
 }
@@ -475,7 +492,7 @@ function checkPunching(character) {
     if (character.isPunching) {
         character.punchHold -= 1
         if (character.punchHold === 0) {
-            character.punchCooldown = 10
+            character.punchCooldown = 5
             character.firstFrame = true
             character.isPunching = false
             character.canDodge = true
@@ -521,14 +538,15 @@ function lPunch(character) {
 
 function rPunch(character) {
     if (character.canPunch && character.stamina > 25) {
-        console.log("player 1 crossed")
         character.canBlock = false
+        character.firstFrame = true
         character.punchHold = 24
         character.punchFrames = player.punchHold
         character.punchHit = 10 // change according to actual frame once animated
         character.isPunching = true
         character.canPunch = false
         character.canDodge = false
+        character.stance = "cross"
         character.damageMultiplier = 1
         character.stamina -= 25
     }
@@ -577,7 +595,7 @@ document.addEventListener("keydown", function(e) {
         lPunch(player)
         lPunch(enemy)
     }
-    if (e.key.toLowerCase() === 'l') rPunch()
+    if (e.key.toLowerCase() === 'l') rPunch(player)
     if (e.key.toLowerCase() === 'm') hook()
 
 
