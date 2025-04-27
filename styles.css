@@ -1,4 +1,108 @@
 
 #gameWindow {
-    border: black 2px solid;
+    border: 3px white solid;
+    box-shadow: white 0 0 20px 20px;
+}
+
+canvas {
+    image-rendering: pixelated;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* Disable text selection everywhere */
+body, button, h1, h2, p {
+    user-select: none;
+    -webkit-user-select: none; /* for Safari */
+    -ms-user-select: none; /* for IE */
+}
+
+/* Whole page settings */
+body {
+    background-color: #111;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    text-align: center;
+    image-rendering: pixelated;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Title screen container */
+#title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Title */
+h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+/* Subtitle */
+h2 {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+/* Buttons container (NOW FLEX ROW) */
+#button-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Button wrapper (fixes layout shift) */
+.button-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px; /* fixed width to lock the button size */
+    height: 80px; /* fixed height to lock the button size */
+}
+
+/* Buttons */
+button {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: 4px solid white; /* start small */
+    margin: 0;
+    cursor: pointer;
+    image-rendering: pixelated;
+    box-sizing: border-box;
+    transition: transform 0.2s ease, border-width 0.2s ease, border-color 0.2s ease;
+}
+
+/* Hover effect */
+button:hover {
+    transform: scale(1.1);
+}
+
+/* Clicked and stay highlighted */
+button.clicked {
+    border-width: 8px; /* border physically grows */
+    border-color: yellow;
+    transform: scale(1.1);
+}
+
+/* ENTER text */
+p {
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+/* Hide canvas */
+canvas {
+    display: none;
 }
