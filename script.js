@@ -122,8 +122,6 @@ function animateGame() {
 }
 
 function determineEnemyStyle() {
-    // moveStyle: "neutral", // either maintaining distance, closing distance, or neutral
-    // idleStyle: "neutral", // either defensive w/ guard, neutral, or counter-ready
     if (enemy.health >= player.health) { //movement
         if (timeFrame%60 === 0) {
             if (Math.random() > 0.1) enemyStyles.moveStyle = "aggressive"
@@ -136,9 +134,20 @@ function determineEnemyStyle() {
             else if (Math.random() > 0.5) enemyStyles.moveStyle = "passive"
             else enemyStyles.moveStyle = "aggressive"
 
-            if (player.stamina < enemy.stamina - 45) enemyStyles.moveStyle = "aggressive"
+            if (player.stamina < enemy.stamina - 30) enemyStyles.moveStyle = "aggressive"
         }
     }
+
+    if (time%10 === 0 && enemy.health > 50) {
+        let rNum = Math.random()
+        if (rNum > 0.66) enemyStyles.idleStyle = "guard"
+        else if (rNum > 0.33) enemyStyles.idleStyle = "neutral"
+        else enemyStyles.idleStyle = "counter"
+    } else if (time%10 === 0) {
+        if (Math.random() > 0.33) enemyStyles.idleStyle = "guard"
+        else enemyStyles.idleStyle = "neutral"
+    }
+
     //counter
     if (enemyStyles.moveStyle === "aggressive") enemyStyles.counterStyle = "counter"
     else enemyStyles.counterStyle = "escape"
@@ -148,6 +157,8 @@ function determineEnemyStyle() {
 }
 
 function enemyController() {
+    //enemy.xloc + player.punchDistance <= player.xloc + player.width
+
     if (timeFrame === 10 && enemyStyles.moveStyle === "aggressive") {
         if (enemy.xloc - enemy.punchDistance >= player.xloc + player.width) {
             enemy.keys.a = true
@@ -165,7 +176,7 @@ function enemyController() {
         if (enemy.xloc + enemy.width - 30 >= canvas.width) {
             enemy.keys.a = false
             enemy.keys.d = false
-        }
+         }
     }
     if (timeFrame === 10 && enemyStyles.moveStyle === "neutral") {
         if (enemy.xloc + enemy.punchDistance < canvas.width/2) {
@@ -174,6 +185,18 @@ function enemyController() {
         } else {
             enemy.keys.a = true
             enemy.keys.d = false
+        }
+    }
+
+    if (enemy.xloc + player.punchDistance <= player.xloc + player.width && timeFrame%3 === 0){
+        let chance = Math.random()
+        if (chance < 0.2 && enemyStyles.attackStyle === "poke") {
+            if (Math.random() > 0.3) lPunch(enemy)
+            else rPunch(enemy)
+        }
+        if (chance < 0.2 && enemyStyles.attackStyle === "pressure") {
+            if (Math.random() > 0.3) rPunch(enemy)
+            else lPunch(enemy)
         }
     }
 
@@ -602,15 +625,22 @@ function dodge(character) {
 }
 
 function dealDamage(character) {
-    if (player.xloc + player.width - player.punchDistance >= enemy.xloc && character === player && !enemy.isDodging) {
-        enemy.health -= (player.damage * player.damageMultiplier) - enemy.defense
+    if (player.xloc + player.width - player.punchDistance >= enemy.xloc && character === player) {
+        if (!enemy.isDodging) {
+            enemy.health -= (player.damage * player.damageMultiplier) - enemy.defense
+        } else {
+            console.log('enemy dodged')
+        }
+
     }
-    if (enemy.xloc + player.punchDistance <= player.xloc + player.width && character === enemy && !player.isDodging) {
-        player.health -= (enemy.damage * enemy.damageMultiplier) - player.defense
+    if (enemy.xloc + player.punchDistance <= player.xloc + player.width && character === enemy) {
+        if (!player.isDodging) {
+            player.health -= (enemy.damage * enemy.damageMultiplier) - player.defense
+        } else {
+            console.log('player dodged')
+        }
     }
-    else {
-        console.log('erm')
-    }
+
 }
 
 function checkPunching(character) {
