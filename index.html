@@ -4,12 +4,29 @@
     <meta charset="UTF-8">
     <title>Untitled Boxing Game</title>
     <link rel="stylesheet" href="styles.css">
+
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
 </head>
-<body onload="initialize()">
-<div>
-    <canvas id="gameWindow" width="960px" height="540px"></canvas>
+<body onload="">
+<div id="title-screen">
+    <div id="title-container">
+        <h1>Titled Boxing Game</h1>
+        <h2>Choose Difficulty</h2>
+        <div id="button-container">
+            <div class="button-wrapper">
+                <button onclick="select(0)">Beginner</button>
+            </div>
+            <div class="button-wrapper">
+                <button onclick="select(1)">Advanced</button>
+            </div>
+        </div>
+
+        <p>Press ENTER to start</p>
+    </div>
 </div>
+<canvas id="gameWindow" width="960px" height="540px"></canvas>
+
 <script src="script.js"></script>
 </body>
 </html>
