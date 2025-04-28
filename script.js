@@ -126,7 +126,7 @@ function determineEnemyStyle() {
         if (timeFrame%60 === 0) {
             if (Math.random() > 0.1) enemyStyles.moveStyle = "aggressive"
             else enemyStyles.moveStyle = "neutral"
-            if (time < 90) enemyStyles.moveStyle = "aggressive"
+            if (time < 45) enemyStyles.moveStyle = "aggressive"
         }
     } else {
         if (time%3 === 0) {
@@ -159,52 +159,56 @@ function determineEnemyStyle() {
 function enemyController() {
     //enemy.xloc + player.punchDistance <= player.xloc + player.width
 
-    if (timeFrame === 10 && enemyStyles.moveStyle === "aggressive") {
-        if (enemy.xloc - enemy.punchDistance >= player.xloc + player.width) {
-            enemy.keys.a = true
-            enemy.keys.d = false
+    if (ai) {
+        if (timeFrame === 10 && enemyStyles.moveStyle === "aggressive") {
+            if (enemy.xloc - enemy.punchDistance >= player.xloc + player.width) {
+                enemy.keys.a = true
+                enemy.keys.d = false
+            }
+            let test = Math.random()
+            if (test > 0.7 && player.stamina >= enemy.stamina - 20) {
+                enemy.keys.a = false
+                enemy.keys.d = true
+            }
         }
-        let test = Math.random()
-        if (test > 0.7 && player.stamina >= enemy.stamina - 20) {
+        if (timeFrame === 10 && enemyStyles.moveStyle === "passive") {
             enemy.keys.a = false
             enemy.keys.d = true
+            if (enemy.xloc + enemy.width - 30 >= canvas.width) {
+                enemy.keys.a = false
+                enemy.keys.d = false
+            }
         }
-    }
-    if (timeFrame === 10 && enemyStyles.moveStyle === "passive") {
-        enemy.keys.a = false
-        enemy.keys.d = true
-        if (enemy.xloc + enemy.width - 30 >= canvas.width) {
-            enemy.keys.a = false
-            enemy.keys.d = false
-         }
-    }
-    if (timeFrame === 10 && enemyStyles.moveStyle === "neutral") {
-        if (enemy.xloc + enemy.punchDistance < canvas.width/2) {
-            enemy.keys.a = false
-            enemy.keys.d = true
-        } else {
-            enemy.keys.a = true
-            enemy.keys.d = false
+        if (timeFrame === 10 && enemyStyles.moveStyle === "neutral") {
+            if (enemy.xloc + enemy.punchDistance < canvas.width/2) {
+                enemy.keys.a = false
+                enemy.keys.d = true
+            } else {
+                enemy.keys.a = true
+                enemy.keys.d = false
+            }
+        }
+
+        if (enemy.xloc + player.punchDistance <= player.xloc + player.width && timeFrame%3 === 0){
+            let chance = Math.random()
+            if (chance < 0.1 && enemyStyles.attackStyle === "poke") {
+                if (Math.random() > 0.3) lPunch(enemy)
+                else rPunch(enemy)
+            }
+            if (chance < 0.1 && enemyStyles.attackStyle === "pressure") {
+                if (Math.random() > 0.3) rPunch(enemy)
+                else lPunch(enemy)
+            }
         }
     }
 
-    if (enemy.xloc + player.punchDistance <= player.xloc + player.width && timeFrame%3 === 0){
-        let chance = Math.random()
-        if (chance < 0.1 && enemyStyles.attackStyle === "poke") {
-            if (Math.random() > 0.3) lPunch(enemy)
-            else rPunch(enemy)
-        }
-        if (chance < 0.1 && enemyStyles.attackStyle === "pressure") {
-            if (Math.random() > 0.3) rPunch(enemy)
-            else lPunch(enemy)
-        }
-    }
+
 
 
 }
 
 
-let time = 180
+let time = 90
 let timeFrame = 0
 let seconds = 0
 function reduceTime() {
@@ -800,9 +804,11 @@ buttons.forEach(button => {
 
 let selected = false
 let initialized = false
+let ai = true
 
 function select(difficulty) {
     if (difficulty === 0) enemyStyles.timingStyle = "slow"
-    else enemyStyles.timingStyle = "instant"
+    else if (difficulty === 1) enemyStyles.timingStyle = "instant"
+    else ai = false
     selected = true
 }
