@@ -63,7 +63,7 @@ const createImage = function(src, x, y, w, h, health, stamina, damage, defense, 
     return img;
 }
 
-player = createImage("Resources/Player/player.png", 100, 240, 200, 200, 100, 100, 10, 2, 2, "idle")
+player = createImage("Resources/Player/player.png", 100, 240, 200, 200, 100, 100, 10, 0, 2, "idle")
 
 player.idleImage.src = 'Resources/Player/PlayerIdle.png'
 player.rightWalkImage.src = 'Resources/Player/PlayerRWalk.png'
@@ -75,7 +75,7 @@ player.blockImage.src = 'Resources/Player/playerBlock.png'
 player.blockRImage.src = 'Resources/Player/blockRight.png'
 player.blockLImage.src = 'Resources/Player/blockLeft.png'
 
-enemy = createImage("Resources/Enemy/enemy.png", 700, 240, 200, 200, 100, 100, 10, 2, 2, "idle")
+enemy = createImage("Resources/Enemy/enemy.png", 700, 240, 200, 200, 100, 100, 10, 0, 2, "idle")
 
 enemy.idleImage.src = 'Resources/Enemy/enemyIdle.png'
 enemy.leftWalkImage.src = 'Resources/Enemy/enemyWalkLeft.png'
@@ -88,7 +88,7 @@ let enemyStyles = {
     idleStyle: "neutral", // either defensive w/ guard, neutral, or counter-ready
     counterStyle: "counter", // either dodging to escape, or dodging to counter
     attackStyle: "poke", //poke, burst, counter, pressure
-    timingStyle: "instant" //slow, pause, or instant
+    timingStyle: "instant" //slow, or instant
 }
 
 function initialize() {
@@ -190,11 +190,11 @@ function enemyController() {
 
     if (enemy.xloc + player.punchDistance <= player.xloc + player.width && timeFrame%3 === 0){
         let chance = Math.random()
-        if (chance < 0.2 && enemyStyles.attackStyle === "poke") {
+        if (chance < 0.1 && enemyStyles.attackStyle === "poke") {
             if (Math.random() > 0.3) lPunch(enemy)
             else rPunch(enemy)
         }
-        if (chance < 0.2 && enemyStyles.attackStyle === "pressure") {
+        if (chance < 0.1 && enemyStyles.attackStyle === "pressure") {
             if (Math.random() > 0.3) rPunch(enemy)
             else lPunch(enemy)
         }
@@ -380,6 +380,9 @@ let enemyStaminaIndicatorTX = 605
 let enemyStaminaIndicatorBX = 630
 
 function animateHealth() {
+    if (player.health > 100) player.health = 100
+    if (enemy.health > 100) enemy.health = 100
+
     //ratio for player is 100 to 435
     playerHealthTX += (5 + (player.health * 4.3) - playerHealthTX) * 0.1
     playerHealthBX = playerHealthTX - 40
@@ -608,7 +611,7 @@ function checkDodge(character) {
 }
 
 function dodge(character) {
-    if (character.canDodge) {
+    if (character.canDodge && character.canPunch && character.stamina > 15) {
         console.log("player 1 dodge")
         character.canBlock = false
         character.isBlocking = false
@@ -620,7 +623,7 @@ function dodge(character) {
         character.canDodge = false
         character.canPunch = false
         character.stance = "dodge"
-        character.stamina -= 10
+        character.stamina -= 15
     }
 }
 
@@ -637,7 +640,7 @@ function dealDamage(character) {
         if (!player.isDodging) {
             player.health -= (enemy.damage * enemy.damageMultiplier) - player.defense
         } else {
-            console.log('player dodged')
+            player.health += 3
         }
     }
 
@@ -668,10 +671,16 @@ function checkPunching(character) {
 
 function checkBlocking(character) {
     if (!character.canBlock && character.isBlocking) {
-        character.speed *= 2
         character.keys.blocking = false
         character.isBlocking = false
         console.log('check')
+    }
+    if (character.isBlocking) {
+        character.speed = 1
+        character.defense = 3
+    } else {
+        character.speed = 2
+        character.defense = 0
     }
 }
 
@@ -740,7 +749,6 @@ document.addEventListener("keydown", function(e) {
     }
     if (e.key.toLowerCase() === 's' && player.canBlock) {
         if (!player.keys.blocking) {
-            player.speed /= 2
             player.keys.blocking = true
             player.isBlocking = true
             player.stance = "block"
@@ -774,7 +782,6 @@ document.addEventListener("keyup", function(e) {
         if (!player.keys.a && !player.isPunching) player.firstFrame = true
     }
     if (e.key.toLowerCase() === 's' && player.keys.blocking) {
-        player.speed *= 2
         player.keys.blocking = false
         player.isBlocking = false
     }
