@@ -114,7 +114,7 @@ function dodgeConfirmAnimation() {
     if (enemyDodge > 0) enemyDodge -= 2
     if (enemyTextHold > 0 || enemyDodge > 0) enemyTextHold -= 1
 
-    ctx.fillStyle = "#ff8103" //cutoff
+    ctx.fillStyle = "#ff8103"
     ctx.textAlign = "center";
     ctx.strokeStyle = 'black'
     ctx.miterLimit = 2;
@@ -135,26 +135,45 @@ function dodgeConfirmAnimation() {
     }
 }
 
+let gameOver = 0
+let gameOverHold = 0
+function gameOverAnimation() {
+    if (gameOver > 0) gameOver -= 2
+    if (gameOverHold > 0 || gameOver > 0) gameOverHold -= 1
+
+    ctx.fillStyle = "#ff0000"
+    if (gameOver > 0 || gameOverHold > 0) {
+        ctx.lineWidth = 5;
+        ctx.font = (65 + gameOver) + "px 'Press Start 2P'";
+        ctx.strokeText("GAME OVER!", canvas.width/2, 300);
+        ctx.lineWidth = 1;
+        ctx.fillText("GAME OVER!", canvas.width/2, 300);
+    }
+}
+
 function animateGame() {
     clear()
-    dodgeConfirmAnimation()
     drawPlayers()
+    dodgeConfirmAnimation()
+    gameOverAnimation()
     drawBars()
-    movePlayers(player)
-    enemyController()
-    movePlayers(enemy)
-    checkCollision()
-    checkDodge(player)
-    checkDodge(enemy)
-    checkPunching(player)
-    checkPunching(enemy)
-    checkBlocking(player)
-    checkBlocking(enemy)
+    if (game) {
+        movePlayers(player)
+        enemyController()
+        movePlayers(enemy)
+        checkCollision()
+        checkDodge(player)
+        checkDodge(enemy)
+        checkPunching(player)
+        checkPunching(enemy)
+        checkBlocking(player)
+        checkBlocking(enemy)
+        staminaRegen()
+        reduceTime()
+        determineEnemyStyle()
+    }
     animateHealth()
     animateStamina()
-    staminaRegen()
-    reduceTime()
-    determineEnemyStyle()
     requestAnimationFrame(animateGame);
 }
 
@@ -267,18 +286,36 @@ function enemyController() {
 
 }
 
-
-let time = 90
+let game = true
+let time = 180
 let timeFrame = 0
 let frame = 0
 let seconds = 0
 function reduceTime() {
-    timeFrame++
-    frame++
-    if (timeFrame === 60) {
-        time--
-        timeFrame = 0
+    if (game) {
+        timeFrame++
+        frame++
+        if (timeFrame === 60) {
+            time--
+            timeFrame = 0
+        }
     }
+    if (time === 0) {
+        game = false
+        player.keys.a = false
+        player.keys.d = false
+        enemy.keys.a = false
+        enemy.keys.d = false
+        gameOver = 25
+        gameOverHold = 100
+        if (!(player.stance === "block")) {
+            player.stance = "idle"
+        }
+        if (!(enemy.stance === "block")) {
+            enemy.stance = "idle"
+        }
+    }
+
 }
 
 let background = new Image()
@@ -811,60 +848,63 @@ function hook(character) {
 }
 
 document.addEventListener("keydown", function(e) {
-    if (e.key.toLowerCase() === 'a') {
-        player.keys.a = true
-        player.keys.d = false
-    }
-    if (e.key.toLowerCase() === 'd') {
-        player.keys.a = false
-        player.keys.d = true
+    if (game) {
+        if (e.key.toLowerCase() === 'a') {
+            player.keys.a = true
+            player.keys.d = false
+        }
+        if (e.key.toLowerCase() === 'd') {
+            player.keys.a = false
+            player.keys.d = true
 
-    }
-    if (e.key === ' ') {
-        dodge(player)
-    }
-    if (e.key.toLowerCase() === 's' && player.canBlock) {
-        if (!player.keys.blocking) {
-            player.keys.blocking = true
-            player.isBlocking = true
-            player.stance = "block"
         }
-        console.log('a')
-    }
-    if (e.key.toLowerCase() === 'g') {
-        lPunch(player)
-    }
-    if (e.key.toLowerCase() === 'h') {
-        rPunch(player)
-    }
-    if (e.key.toLowerCase() === 'v') hook()
+        if (e.key === ' ') {
+            dodge(player)
+        }
+        if (e.key.toLowerCase() === 's' && player.canBlock) {
+            if (!player.keys.blocking) {
+                player.keys.blocking = true
+                player.isBlocking = true
+                player.stance = "block"
+            }
+            console.log('a')
+        }
+        if (e.key.toLowerCase() === 'g') {
+            lPunch(player)
+        }
+        if (e.key.toLowerCase() === 'h') {
+            rPunch(player)
+        }
+        if (e.key.toLowerCase() === 'v') hook()
 
-    if (!ai) {
-        if (e.key === 'ArrowLeft') {
-            enemy.keys.a = true
-            enemy.keys.d = false
-        }
-        if (e.key === 'ArrowRight') {
-            enemy.keys.a = false
-            enemy.keys.d = true
-        }
-        if (e.key === '/') {
-            dodge(enemy)
-        }
-        if (e.key=== 'ArrowDown' && enemy.canBlock) {
-            if (!enemy.keys.blocking) {
-                enemy.keys.blocking = true
-                enemy.isBlocking = true
-                enemy.stance = "block"
+        if (!ai) {
+            if (e.key === 'ArrowLeft') {
+                enemy.keys.a = true
+                enemy.keys.d = false
+            }
+            if (e.key === 'ArrowRight') {
+                enemy.keys.a = false
+                enemy.keys.d = true
+            }
+            if (e.key === '/') {
+                dodge(enemy)
+            }
+            if (e.key=== 'ArrowDown' && enemy.canBlock) {
+                if (!enemy.keys.blocking) {
+                    enemy.keys.blocking = true
+                    enemy.isBlocking = true
+                    enemy.stance = "block"
+                }
+            }
+            if (e.key.toLowerCase() === 'k') {
+                lPunch(enemy)
+            }
+            if (e.key.toLowerCase() === 'l') {
+                rPunch(enemy)
             }
         }
-        if (e.key.toLowerCase() === 'k') {
-            lPunch(enemy)
-        }
-        if (e.key.toLowerCase() === 'l') {
-            rPunch(enemy)
-        }
     }
+
 
 
     if (e.key === "Enter" && !initialized) {
