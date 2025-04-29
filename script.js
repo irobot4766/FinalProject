@@ -110,15 +110,20 @@ let enemyTextHold = 0
 
 function dodgeConfirmAnimation() {
     if (playerDodge > 0) playerDodge -= 2
-    if (playerTextHold > 0 || playerDodge > 0) playerTextHold -= 1
+    if (playerTextHold > 0 || playerDodge > 0) {
+        playerTextHold -= 1
+    }
     if (enemyDodge > 0) enemyDodge -= 2
-    if (enemyTextHold > 0 || enemyDodge > 0) enemyTextHold -= 1
+    if (enemyTextHold > 0 || enemyDodge > 0) {
+        enemyTextHold -= 1
+    }
 
     ctx.fillStyle = "#ff8103"
     ctx.textAlign = "center";
     ctx.strokeStyle = 'black'
     ctx.miterLimit = 2;
     ctx.lineJoin = 'circle';
+    ctx.globalAlpha = playerTextHold * 0.02;
     if (playerDodge > 0 || playerTextHold > 0) {
         ctx.lineWidth = 5;
         ctx.font = (45 + playerDodge) + "px 'Press Start 2P'";
@@ -126,6 +131,7 @@ function dodgeConfirmAnimation() {
         ctx.lineWidth = 1;
         ctx.fillText("DODGED!", 200, 230);
     }
+    ctx.globalAlpha = enemyTextHold * 0.02;
     if (enemyDodge > 0 || enemyTextHold > 0) {
         ctx.lineWidth = 5;
         ctx.font = (45 + enemyDodge) + "px 'Press Start 2P'";
@@ -133,6 +139,8 @@ function dodgeConfirmAnimation() {
         ctx.lineWidth = 1;
         ctx.fillText("DODGED!", 800, 230);
     }
+
+    ctx.globalAlpha = 1
 }
 
 let gameOver = 0
@@ -838,7 +846,9 @@ function hook(character) {
         character.isBlocking = false
         character.punchHold = 36
         character.punchFrames = character.punchHold
-        character.punchHit = 24 // change according to actual frame once animated
+        character.punchHit = 24 // change according to actual frame once
+
+        // animated
         character.isPunching = true
         character.canPunch = false
         character.canDodge = false
