@@ -82,6 +82,10 @@ enemy.leftWalkImage.src = 'Resources/Enemy/enemyWalkLeft.png'
 enemy.rightWalkImage.src = 'Resources/enemy/enemyWalkRight.png'
 enemy.jabImage.src = 'Resources/enemy/enemyJab.png'
 enemy.crossImage.src = 'Resources/enemy/enemyCross.png'
+enemy.dodgeImage.src = 'Resources/enemy/enemyDodge.png'
+enemy.blockImage.src = 'Resources/enemy/enemyBlock.png'
+enemy.blockRImage.src = 'Resources/enemy/EBlockRight.png'
+enemy.blockLImage.src = 'Resources/enemy/EBlockLeft.png'
 
 let enemyStyles = {
     moveStyle: "neutral", // either maintaining distance, closing distance, or neutral
@@ -99,9 +103,41 @@ function initialize() {
     animateGame()
 }
 
+let playerDodge = 0
+let playerTextHold = 0
+let enemyDodge = 0
+let enemyTextHold = 0
+
+function dodgeConfirmAnimation() {
+    if (playerDodge > 0) playerDodge -= 2
+    if (playerTextHold > 0 || playerDodge > 0) playerTextHold -= 1
+    if (enemyDodge > 0) enemyDodge -= 2
+    if (enemyTextHold > 0 || enemyDodge > 0) enemyTextHold -= 1
+
+    ctx.fillStyle = "#ff8103" //cutoff
+    ctx.textAlign = "center";
+    ctx.strokeStyle = 'black'
+    ctx.miterLimit = 2;
+    ctx.lineJoin = 'circle';
+    if (playerDodge > 0 || playerTextHold > 0) {
+        ctx.lineWidth = 5;
+        ctx.font = (45 + playerDodge) + "px 'Press Start 2P'";
+        ctx.strokeText("DODGED!", 200, 230);
+        ctx.lineWidth = 1;
+        ctx.fillText("DODGED!", 200, 230);
+    }
+    if (enemyDodge > 0 || enemyTextHold > 0) {
+        ctx.lineWidth = 5;
+        ctx.font = (45 + enemyDodge) + "px 'Press Start 2P'";
+        ctx.strokeText("DODGED!", 800, 230);
+        ctx.lineWidth = 1;
+        ctx.fillText("DODGED!", 800, 230);
+    }
+}
 
 function animateGame() {
     clear()
+    dodgeConfirmAnimation()
     drawPlayers()
     drawBars()
     movePlayers(player)
@@ -109,6 +145,7 @@ function animateGame() {
     movePlayers(enemy)
     checkCollision()
     checkDodge(player)
+    checkDodge(enemy)
     checkPunching(player)
     checkPunching(enemy)
     checkBlocking(player)
@@ -118,7 +155,7 @@ function animateGame() {
     staminaRegen()
     reduceTime()
     determineEnemyStyle()
-    let a = requestAnimationFrame(animateGame);
+    requestAnimationFrame(animateGame);
 }
 
 function determineEnemyStyle() {
@@ -137,15 +174,23 @@ function determineEnemyStyle() {
             if (player.stamina < enemy.stamina - 30) enemyStyles.moveStyle = "aggressive"
         }
     }
-
-    if (time%10 === 0 && enemy.health > 50) {
-        let rNum = Math.random()
-        if (rNum > 0.66) enemyStyles.idleStyle = "guard"
-        else if (rNum > 0.33) enemyStyles.idleStyle = "neutral"
-        else enemyStyles.idleStyle = "counter"
-    } else if (time%10 === 0) {
-        if (Math.random() > 0.33) enemyStyles.idleStyle = "guard"
-        else enemyStyles.idleStyle = "neutral"
+    if (Math.random() > 0.5) {
+        if (frame%90 === 0 && enemy.health > 50) {
+            let rNum = Math.random()
+            if (rNum > 0.66) enemyStyles.idleStyle = "guard"
+            else if (rNum > 0.33) enemyStyles.idleStyle = "neutral"
+            else enemyStyles.idleStyle = "counter"
+        } else if (frame%90 === 0) {
+            if (Math.random() > 0.33) enemyStyles.idleStyle = "guard"
+            else enemyStyles.idleStyle = "neutral"
+        }
+    } else {
+        if (frame%90 === 0) {
+            if (enemy.health < player.health) enemyStyles.idleStyle = "counter"
+            if (enemy.stamina < 50) enemyStyles.idleStyle = "guard"
+            if (player.health < enemy.health) enemyStyles.idleStyle = "neutral"
+            if (enemy.xloc + player.punchDistance <= player.xloc + player.width && enemy.stamina < 75) enemyStyles.idleStyle = "guard"
+        }
     }
 
     //counter
@@ -158,7 +203,7 @@ function determineEnemyStyle() {
 
 function enemyController() {
     //enemy.xloc + player.punchDistance <= player.xloc + player.width
-
+    console.log(enemyStyles.idleStyle)
     if (ai) {
         if (timeFrame === 10 && enemyStyles.moveStyle === "aggressive") {
             if (enemy.xloc - enemy.punchDistance >= player.xloc + player.width) {
@@ -191,13 +236,28 @@ function enemyController() {
 
         if (enemy.xloc + player.punchDistance <= player.xloc + player.width && timeFrame%3 === 0){
             let chance = Math.random()
-            if (chance < 0.1 && enemyStyles.attackStyle === "poke") {
+            let timing = 0.3
+            if (enemyStyles.timingStyle === "slow") timing = 0.04
+            if (chance < timing && enemyStyles.attackStyle === "poke") {
                 if (Math.random() > 0.3) lPunch(enemy)
                 else rPunch(enemy)
             }
-            if (chance < 0.1 && enemyStyles.attackStyle === "pressure") {
+            if (chance < timing && enemyStyles.attackStyle === "pressure") {
                 if (Math.random() > 0.3) rPunch(enemy)
                 else lPunch(enemy)
+            }
+        }
+
+        if (enemyStyles.idleStyle === "neutral") {
+            enemy.keys.blocking = false
+        }
+        else enemy.keys.blocking = (enemyStyles.idleStyle === "guard")
+
+        if (player.isPunching && enemy.xloc + player.punchDistance <= player.xloc + player.width && (player.punchFrames - player.punchHit < player.punchHold)) {
+            if (enemyStyles.timingStyle === "slow" && Math.random() < 0.05) {
+                dodge(enemy)
+            } else if (enemyStyles.timingStyle === "instant" && Math.random() < 0.6) {
+                dodge(enemy)
             }
         }
     }
@@ -210,9 +270,11 @@ function enemyController() {
 
 let time = 90
 let timeFrame = 0
+let frame = 0
 let seconds = 0
 function reduceTime() {
     timeFrame++
+    frame++
     if (timeFrame === 60) {
         time--
         timeFrame = 0
@@ -250,7 +312,6 @@ function checkPlayerFrame(character) {
     if (!character.keys.d && !character.keys.a && !character.isPunching && !character.isDodging && !character.isBlocking) character.stance = "idle"
     if (character.keys.d && !character.keys.a && !character.isPunching && !character.isDodging && !character.isBlocking) character.stance = "rightWalk"
     if (character.keys.a && !character.keys.d && !character.isPunching && !character.isDodging && !character.isBlocking) character.stance = "leftWalk"
-    if (!character.keys.a && !character.keys.d && !character.isPunching && character.isDodging) character.stance = "dodge"
     if (character.isBlocking && !character.keys.a && !character.keys.d) character.stance = "block"
     if (character.isBlocking && !character.keys.a && character.keys.d) character.stance = "blockRight"
     if (character.isBlocking && character.keys.a && !character.keys.d) character.stance = "blockLeft"
@@ -636,7 +697,9 @@ function dealDamage(character) {
         if (!enemy.isDodging) {
             enemy.health -= (player.damage * player.damageMultiplier) - enemy.defense
         } else {
-            console.log('enemy dodged')
+            enemy.health += 3
+            enemyDodge = 25
+            enemyTextHold = 50
         }
 
     }
@@ -645,6 +708,8 @@ function dealDamage(character) {
             player.health -= (enemy.damage * enemy.damageMultiplier) - player.defense
         } else {
             player.health += 3
+            playerDodge = 25
+            playerTextHold = 50
         }
     }
 
@@ -674,6 +739,13 @@ function checkPunching(character) {
 
 
 function checkBlocking(character) {
+    if (character.keys.blocking && character.canBlock) {
+        character.keys.blocking = true
+        character.isBlocking = true
+        character.stance = "block"
+    } else if (!character.keys.blocking) {
+        character.isBlocking = false
+    }
     if (!character.canBlock && character.isBlocking) {
         character.keys.blocking = false
         character.isBlocking = false
@@ -767,6 +839,34 @@ document.addEventListener("keydown", function(e) {
     }
     if (e.key.toLowerCase() === 'v') hook()
 
+    if (!ai) {
+        if (e.key === 'ArrowLeft') {
+            enemy.keys.a = true
+            enemy.keys.d = false
+        }
+        if (e.key === 'ArrowRight') {
+            enemy.keys.a = false
+            enemy.keys.d = true
+        }
+        if (e.key === '/') {
+            dodge(enemy)
+        }
+        if (e.key=== 'ArrowDown' && enemy.canBlock) {
+            if (!enemy.keys.blocking) {
+                enemy.keys.blocking = true
+                enemy.isBlocking = true
+                enemy.stance = "block"
+            }
+        }
+        if (e.key.toLowerCase() === 'k') {
+            lPunch(enemy)
+        }
+        if (e.key.toLowerCase() === 'l') {
+            rPunch(enemy)
+        }
+    }
+
+
     if (e.key === "Enter" && !initialized) {
         document.getElementById("gameWindow").style.display = 'block'
         document.getElementById("title-screen").style.display = 'none'
@@ -789,6 +889,21 @@ document.addEventListener("keyup", function(e) {
         player.keys.blocking = false
         player.isBlocking = false
     }
+
+    if (!ai) {
+        if (e.key === 'ArrowLeft') {
+            enemy.keys.a = false
+            if (!enemy.keys.d && !enemy.isPunching) enemy.firstFrame = true
+        }
+        if (e.key === 'ArrowRight') {
+            enemy.keys.d = false
+            if (!enemy.keys.a && !enemy.isPunching) enemy.firstFrame = true
+        }
+        if (e.key === 'ArrowDown' && enemy.keys.blocking) {
+            enemy.keys.blocking = false
+            enemy.isBlocking = false
+        }
+    }
 })
 
 const buttons = document.querySelectorAll('button');
@@ -807,6 +922,7 @@ let initialized = false
 let ai = true
 
 function select(difficulty) {
+    ai = true
     if (difficulty === 0) enemyStyles.timingStyle = "slow"
     else if (difficulty === 1) enemyStyles.timingStyle = "instant"
     else ai = false
