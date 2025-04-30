@@ -10,6 +10,20 @@ canvas {
     -moz-osx-font-smoothing: grayscale;
 }
 
+#playAgainMenu {
+    display: none;
+    background: rgba(0, 0, 0, 0.22);
+    width: 960px;
+    height: 540px;
+    justify-content: center;
+    position: absolute;
+    border: 3px white solid;
+
+}
+
+#gameInteract {
+    justify-content: center;
+}
 
 /* Disable text selection everywhere */
 body, button, h1, h2, p {
