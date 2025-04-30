@@ -3,7 +3,7 @@ let canvas = document.getElementById("gameWindow");
 let ctx = canvas.getContext("2d", {antialias: false});
 ctx.imageSmoothingEnabled = false;
 canvas.style.imageRendering = "pixelated"; // For modern browsers
-
+let menu = document.getElementById("playAgainMenu");
 
 const createImage = function(src, x, y, w, h, health, stamina, damage, defense, speed, stance) {
     const img = new Image();
@@ -145,21 +145,113 @@ function dodgeConfirmAnimation() {
 
 let gameOver = 0
 let gameOverHold = 0
+let gameOverYloc = 300
 
 function gameOverAnimation() {
     if (gameOver > 0) gameOver -= 2
 
-    ctx.globalAlpha = gameOverHold * 0.002;
-    if (gameOverHold > 0 || gameOver > 0) gameOverHold -= 1
+    if (gameOverHold > 0 || gameOver > 0) {
+        gameOverHold -= 1
+        gameOverYloc -= 1
+    }
 
     ctx.fillStyle = "#ff0000"
-    if (gameOver > 0 || gameOverHold > 0) {
+    if (!game) {
         ctx.lineWidth = 5;
         ctx.font = (65 + gameOver) + "px 'Press Start 2P'";
-        ctx.strokeText("GAME OVER!", canvas.width/2, 300);
+        ctx.strokeText("GAME OVER!", canvas.width/2, gameOverYloc);
         ctx.lineWidth = 1;
-        ctx.fillText("GAME OVER!", canvas.width/2, 300);
+        ctx.fillText("GAME OVER!", canvas.width/2, gameOverYloc);
     }
+    ctx.globalAlpha = 1;
+
+}
+
+
+let results = 0
+let resultsHold = 0
+let resultsYloc = 300
+let resultsDisplayed = false
+
+let playAgain = 0
+let playAgainHold = 0
+let playAgainYloc = 300
+let winner
+//
+//
+// function resultsAnimation() {
+//     if (results > 0) results -= 2
+//
+//     if (resultsHold > 0 || results > 0) {
+//         resultsHold -= 1
+//         resultsYloc -= 1
+//     }
+//
+//     if (player.health > enemy.health) winner = 1
+//     else winner = 2
+//
+//     ctx.fillStyle = "#ff0000"
+//     if (gameOverHold === 80) {
+//         results = 20
+//         resultsHold = 100
+//     }
+//     if (!game && gameOverHold < 80) {
+//         ctx.lineWidth = 5;
+//         ctx.font = (30 + results) + "px 'Press Start 2P'";
+//         ctx.strokeText("Player " + winner + " Wins!", canvas.width/2, resultsYloc);
+//         ctx.lineWidth = 1;
+//         ctx.fillText("Player " + winner + " Wins!", canvas.width/2, resultsYloc);
+//     }
+//     ctx.globalAlpha = 1;
+//
+// }
+
+function resultsAnimation() {
+    if (results > 0) results -= 2
+    if (playAgain > 0) playAgain -= 2
+
+    if (resultsHold > 0 || results > 0) {
+        resultsHold -= 1
+        resultsYloc -= 1
+    }
+
+    if (playAgainHold > 0 || playAgain > 0) {
+        playAgainHold -= 1
+        playAgainYloc -= 1
+    }
+
+    if (player.health > enemy.health) winner = 1
+    else winner = 2
+
+    ctx.fillStyle = "#ff0000"
+    if (gameOverHold === 80) {
+        results = 20
+        resultsHold = 100
+        resultsDisplayed = true
+    }
+
+    if (resultsHold === 20) {
+        playAgain = 20
+        playAgainHold = 20
+    }
+
+    if (!game && gameOverHold < 80) {
+        ctx.lineWidth = 5;
+        ctx.font = (30 + results) + "px 'Press Start 2P'";
+        ctx.strokeText("Player " + winner + " Wins!", canvas.width/2, resultsYloc);
+        if (!game && resultsHold < 20 && resultsDisplayed) {
+            ctx.font = (45 + playAgain) + "px 'Press Start 2P'";
+            ctx.strokeText("Play Again?", canvas.width/2, playAgainYloc);
+        }
+        ctx.lineWidth = 1;
+        ctx.font = (30 + results) + "px 'Press Start 2P'";
+        ctx.fillText("Player " + winner + " Wins!", canvas.width/2, resultsYloc);
+        if (!game && resultsHold < 20 && resultsDisplayed) {
+            ctx.font = (45 + playAgain) + "px 'Press Start 2P'";
+            ctx.fillText("Play Again?", canvas.width/2, playAgainYloc);
+        }
+    }
+
     ctx.globalAlpha = 1;
 
 }
@@ -188,6 +280,7 @@ function animateGame() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     gameOverAnimation()
+    resultsAnimation()
     animateHealth()
     animateStamina()
     requestAnimationFrame(animateGame);
@@ -323,7 +416,8 @@ function reduceTime() {
         enemy.keys.a = false
         enemy.keys.d = false
         gameOver = 25
-        gameOverHold = 500
+        gameOverHold = 150
+        menu.style.display = "block"
         if (!(player.stance === "block")) {
             player.stance = "idle"
         }
