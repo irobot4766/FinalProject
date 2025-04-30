@@ -145,8 +145,11 @@ function dodgeConfirmAnimation() {
 
 let gameOver = 0
 let gameOverHold = 0
+
 function gameOverAnimation() {
     if (gameOver > 0) gameOver -= 2
+
+    ctx.globalAlpha = gameOverHold * 0.002;
     if (gameOverHold > 0 || gameOver > 0) gameOverHold -= 1
 
     ctx.fillStyle = "#ff0000"
@@ -157,13 +160,14 @@ function gameOverAnimation() {
         ctx.lineWidth = 1;
         ctx.fillText("GAME OVER!", canvas.width/2, 300);
     }
+    ctx.globalAlpha = 1;
+
 }
 
 function animateGame() {
     clear()
     drawPlayers()
     dodgeConfirmAnimation()
-    gameOverAnimation()
     drawBars()
     if (game) {
         movePlayers(player)
@@ -179,7 +183,11 @@ function animateGame() {
         staminaRegen()
         reduceTime()
         determineEnemyStyle()
+    } else {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+    gameOverAnimation()
     animateHealth()
     animateStamina()
     requestAnimationFrame(animateGame);
@@ -315,7 +323,7 @@ function reduceTime() {
         enemy.keys.a = false
         enemy.keys.d = false
         gameOver = 25
-        gameOverHold = 100
+        gameOverHold = 500
         if (!(player.stance === "block")) {
             player.stance = "idle"
         }
