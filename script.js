@@ -103,6 +103,59 @@ function initialize() {
     animateGame()
 }
 
+function getMousePos(canvas, event) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+    };
+}
+
+function isInside(pos, rect) {
+    return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y
+}
+
+var rect = {
+    x: 100,
+    y: 100,
+    width: 200,
+    height: 100,
+};
+
+canvas.addEventListener('click', function(evt) {
+    var mousePos = getMousePos(canvas, evt);
+    if (isInside(mousePos, rect)) {
+        alert('clicked inside rect');
+    }
+}, false);
+
+let mousePosition
+
+canvas.addEventListener('mousemove', function(evt) {
+    mousePosition = getMousePos(canvas, evt);
+}, false);
+
+function Playbutton(rect, lWidth, fillColor, lineColor) {
+    ctx.beginPath();
+    ctx.rect(rect.x, rect.y, rect.width, rect.height);
+    ctx.fillStyle = 'rgba(225,225,225,0.5)';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#000000';
+    ctx.stroke();
+    ctx.closePath();
+    ctx.font = '40pt Kremlin Pro Web';
+    ctx.fillStyle = '#000000';
+    ctx.fillText('Start', rect.x + rect.width / 4, rect.y + 64);
+}
+
+function animateButtons() {
+    Playbutton(rect);
+    if (isInside(mousePosition, rect)) {
+        console.log('hovering inside rect');
+    }
+}
+
 let playerDodge = 0
 let playerTextHold = 0
 let enemyDodge = 0
@@ -278,6 +331,7 @@ function animateGame() {
     } else {
         ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        animateButtons()
     }
     gameOverAnimation()
     resultsAnimation()
@@ -417,7 +471,6 @@ function reduceTime() {
         enemy.keys.d = false
         gameOver = 25
         gameOverHold = 150
-        menu.style.display = "block"
         if (!(player.stance === "block")) {
             player.stance = "idle"
         }
