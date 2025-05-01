@@ -409,7 +409,7 @@ function reduceTime() {
             timeFrame = 0
         }
     }
-    if (time === 0) {
+    if (time === 0 || player.health <= 0 || enemy.health <= 0) {
         game = false
         player.keys.a = false
         player.keys.d = false
