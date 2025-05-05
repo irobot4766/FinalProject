@@ -103,59 +103,6 @@ function initialize() {
     animateGame()
 }
 
-function getMousePos(canvas, event) {
-    var rect = canvas.getBoundingClientRect();
-    return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
-    };
-}
-
-function isInside(pos, rect) {
-    return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y
-}
-
-var rect = {
-    x: 100,
-    y: 100,
-    width: 200,
-    height: 100,
-};
-
-canvas.addEventListener('click', function(evt) {
-    var mousePos = getMousePos(canvas, evt);
-    if (isInside(mousePos, rect)) {
-        alert('clicked inside rect');
-    }
-}, false);
-
-let mousePosition
-
-canvas.addEventListener('mousemove', function(evt) {
-    mousePosition = getMousePos(canvas, evt);
-}, false);
-
-function Playbutton(rect, lWidth, fillColor, lineColor) {
-    ctx.beginPath();
-    ctx.rect(rect.x, rect.y, rect.width, rect.height);
-    ctx.fillStyle = 'rgba(225,225,225,0.5)';
-    ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#000000';
-    ctx.stroke();
-    ctx.closePath();
-    ctx.font = '40pt Kremlin Pro Web';
-    ctx.fillStyle = '#000000';
-    ctx.fillText('Start', rect.x + rect.width / 4, rect.y + 64);
-}
-
-function animateButtons() {
-    Playbutton(rect);
-    if (isInside(mousePosition, rect)) {
-        console.log('hovering inside rect');
-    }
-}
-
 let playerDodge = 0
 let playerTextHold = 0
 let enemyDodge = 0
@@ -286,22 +233,23 @@ function resultsAnimation() {
     if (resultsHold === 20) {
         playAgain = 20
         playAgainHold = 20
+        menu.style.display = 'block'
     }
 
     if (!game && gameOverHold < 80) {
         ctx.lineWidth = 5;
         ctx.font = (30 + results) + "px 'Press Start 2P'";
-        ctx.strokeText("Player " + winner + " Wins!", canvas.width/2, resultsYloc);
+        ctx.strokeText("Player " + winner + " Wins!", canvas.width / 2, resultsYloc);
         if (!game && resultsHold < 20 && resultsDisplayed) {
             ctx.font = (45 + playAgain) + "px 'Press Start 2P'";
-            ctx.strokeText("Play Again?", canvas.width/2, playAgainYloc);
+            ctx.strokeText("Play Again?", canvas.width / 2, playAgainYloc);
         }
         ctx.lineWidth = 1;
         ctx.font = (30 + results) + "px 'Press Start 2P'";
-        ctx.fillText("Player " + winner + " Wins!", canvas.width/2, resultsYloc);
+        ctx.fillText("Player " + winner + " Wins!", canvas.width / 2, resultsYloc);
         if (!game && resultsHold < 20 && resultsDisplayed) {
             ctx.font = (45 + playAgain) + "px 'Press Start 2P'";
-            ctx.fillText("Play Again?", canvas.width/2, playAgainYloc);
+            ctx.fillText("Play Again?", canvas.width / 2, playAgainYloc);
         }
     }
 
@@ -331,8 +279,8 @@ function animateGame() {
     } else {
         ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        animateButtons()
     }
+    gameOverAnimation()
     gameOverAnimation()
     resultsAnimation()
     animateHealth()
@@ -1072,11 +1020,20 @@ document.addEventListener("keydown", function(e) {
 
 
 
-    if (e.key === "Enter" && !initialized) {
-        document.getElementById("gameWindow").style.display = 'block'
-        document.getElementById("title-screen").style.display = 'none'
-        initialized = true
-        initialize()
+    if (e.key === "Enter" && !initialized && selected) {
+        if (selection === 3) {
+            document.getElementById('select1').style.display = 'none'
+            document.getElementById('select2').style.display = 'flex'
+            document.getElementById('menuText').innerHTML = 'Select Difficulty'
+        } else if (selection === 4) {
+            //tutorial screen
+        } else {
+            document.getElementById("gameWindow").style.display = 'block'
+            document.getElementById("title-screen").style.display = 'none'
+            initialized = true
+            initialize()
+        }
+
     }
 
 })
@@ -1123,11 +1080,13 @@ buttons.forEach(button => {
 });
 
 let selected = false
+let selection = 0
 let initialized = false
 let ai = true
 
 function select(difficulty) {
     ai = true
+    selection = difficulty
     if (difficulty === 0) enemyStyles.timingStyle = "slow"
     else if (difficulty === 1) enemyStyles.timingStyle = "instant"
     else ai = false
