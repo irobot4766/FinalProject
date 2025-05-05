@@ -10,15 +10,17 @@ canvas {
     -moz-osx-font-smoothing: grayscale;
 }
 
+
 #playAgainMenu {
     display: none;
-    background: rgba(0, 0, 0, 0.22);
-    width: 960px;
-    height: 540px;
+    background-color: rgba(0, 0, 0, 0);
+    transition-duration: 10s;
+    transition: background-color 5s ease;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -60%);
     justify-content: center;
     position: absolute;
-    border: 3px white solid;
-
 }
 
 #gameInteract {
