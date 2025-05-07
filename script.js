@@ -99,8 +99,25 @@ function initialize() {
     ctx.drawImage(player, player.xloc, player.yloc, player.width, player.height)
     ctx.drawImage(enemy, enemy.xloc, enemy.yloc, enemy.width, enemy.height)
     clear()
-
+    player.health = 100
+    player.stamina = 100
+    enemy.health = 100
+    enemy.stamina = 100
+    game = true
+    gameOverYloc = 300
+    resultsYloc = 300
+    playAgainYloc = 300
+    time = 180
+    player.xloc = 100
+    enemy.xloc = 700
+    resultsDisplayed = false
     animateGame()
+}
+
+function playAgainF() {
+    cancelAnimationFrame(animateLoop)
+    document.getElementById("playAgainMenu").style.display = 'none'
+    initialize()
 }
 
 let playerDodge = 0
@@ -155,7 +172,7 @@ function gameOverAnimation() {
         gameOverYloc -= 1
     }
 
-    ctx.fillStyle = "#ff0000"
+    ctx.fillStyle = "#ffffff"
     if (!game) {
         ctx.lineWidth = 5;
         ctx.font = (65 + gameOver) + "px 'Press Start 2P'";
@@ -206,6 +223,13 @@ let winner
 //
 // }
 
+function mainMenu() {
+    document.getElementById("gameWindow").style.display = 'none'
+    document.getElementById("playAgainMenu").style.display = 'none'
+    document.getElementById("title-screen").style.display = 'block'
+    cancelAnimationFrame(animateLoop)
+}
+
 function resultsAnimation() {
     if (results > 0) results -= 2
     if (playAgain > 0) playAgain -= 2
@@ -223,7 +247,7 @@ function resultsAnimation() {
     if (player.health > enemy.health) winner = 1
     else winner = 2
 
-    ctx.fillStyle = "#ff0000"
+    ctx.fillStyle = "#ffffff"
     if (gameOverHold === 80) {
         results = 20
         resultsHold = 100
@@ -281,11 +305,10 @@ function animateGame() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     gameOverAnimation()
-    gameOverAnimation()
     resultsAnimation()
     animateHealth()
     animateStamina()
-    requestAnimationFrame(animateGame);
+    animateLoop = requestAnimationFrame(animateGame);
 }
 
 function determineEnemyStyle() {
@@ -1021,17 +1044,23 @@ document.addEventListener("keydown", function(e) {
 
 
     if (e.key === "Enter" && !initialized && selected) {
-        if (selection === 3) {
-            document.getElementById('select1').style.display = 'none'
-            document.getElementById('select2').style.display = 'flex'
-            document.getElementById('menuText').innerHTML = 'Select Difficulty'
-        } else if (selection === 4) {
-            //tutorial screen
+        if (selection === 10) {
+            mainMenu()
+        } else if (selection === 9) {
+            playAgainF()
         } else {
-            document.getElementById("gameWindow").style.display = 'block'
-            document.getElementById("title-screen").style.display = 'none'
-            initialized = true
-            initialize()
+            if (selection === 3) {
+                document.getElementById('select1').style.display = 'none'
+                document.getElementById('select2').style.display = 'flex'
+                document.getElementById('menuText').innerHTML = 'Select Difficulty'
+            } else if (selection === 4) {
+                //tutorial screen
+            } else {
+                document.getElementById("gameWindow").style.display = 'block'
+                document.getElementById("title-screen").style.display = 'none'
+                initialized = true
+                initialize()
+            }
         }
 
     }
@@ -1085,10 +1114,15 @@ let initialized = false
 let ai = true
 
 function select(difficulty) {
-    ai = true
-    selection = difficulty
-    if (difficulty === 0) enemyStyles.timingStyle = "slow"
-    else if (difficulty === 1) enemyStyles.timingStyle = "instant"
-    else ai = false
     selected = true
+    if (difficulty < 9) {
+        ai = true
+        selection = difficulty
+        if (difficulty === 0) enemyStyles.timingStyle = "slow"
+        else if (difficulty === 1) enemyStyles.timingStyle = "instant"
+        else ai = false
+    } else {
+        initialized = false
+    }
+    selection = difficulty
 }
