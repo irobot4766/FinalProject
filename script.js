@@ -224,6 +224,11 @@ let winner
 // }
 
 function mainMenu() {
+    document.getElementById('select1').style.display = 'flex'
+    document.getElementById('select2').style.display = 'none'
+    document.getElementById('menuText').innerHTML = 'Main Menu'
+
+
     document.getElementById("gameWindow").style.display = 'none'
     document.getElementById("playAgainMenu").style.display = 'none'
     document.getElementById("title-screen").style.display = 'block'
