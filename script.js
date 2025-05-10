@@ -1,4 +1,3 @@
-
 let canvas = document.getElementById("gameWindow");
 let ctx = canvas.getContext("2d", {antialias: false});
 ctx.imageSmoothingEnabled = false;
@@ -18,6 +17,7 @@ const createImage = function(src, x, y, w, h, health, stamina, damage, defense, 
     img.defense = defense
     img.speed = speed
     img.stance = stance
+    img.leagueName = ""
 
     img.idleImage = new Image()
     img.rightWalkImage = new Image()
@@ -94,6 +94,74 @@ let enemyStyles = {
     attackStyle: "poke", //poke, burst, counter, pressure
     timingStyle: "instant" //slow, or instant
 }
+
+let leagueFight = false
+const leagueFighters = [
+    ["KING K.O.", 18, 0, 0, 100, 10, 2],
+    ["THE PHANTOM", 16, 2, 0, 95, 9, 1],
+    ["RED VIPER", 15, 0, 3, 90, 8, 0],
+    ["DEADEYE", 12, 2, 2, 85, 8, 0],
+    ["STEELHAND", 14, 1, 5, 80, 8, 0],
+    ["GHOST JAB", 12, 3, 3, 75, 7, 0],
+    ["BULLET BLAKE", 11, 5, 4, 70, 7, 0],
+    ["HAYMAKER", 9, 3, 5, 65, 7, 0],
+    ["CRUSHER", 8, 2, 3, 60, 6, 0],
+    ["MAD DOG", 6, 1, 4, 55, 6, 0],
+    ["DUMPSTER DAVID", 5, 2, 1, 50, 6, 0],
+    ["KNOCKOUT NED", 3, 0, 2, 50, 5, 0],
+    ["SMASH MAN", 2, 1, 2, 50, 5, 0],
+    ["AVERAGE JOE", 1, 0, 1, 50, 5, 0]
+]
+
+let saveState = {
+    playerName: "",
+    rankIndex: 14,
+    playerWins: 0,
+    playerDraws: 0,
+    playerLosses: 0,
+    playerDamage: 10,
+
+    enemyHp: 50,
+    enemyDmg: 10,
+    enemyDef: 0,
+}
+
+function start() {
+    if (!isLoading) {
+        if (document.getElementById('player-name').value.length < 3) {
+            showPopup("Name must be longer than 3 characters")
+        } else {
+            saveState.playerName = document.getElementById('player-name').value
+            document.getElementById('name-screen').style.display = 'none'
+            document.getElementById('title-container').style.display = 'flex'
+            player.leagueName = saveState.playerName.toUpperCase()
+            enemy.leagueName = "ENEMY"
+            leagueFighters.splice(saveState.rankIndex, 0, [player.leagueName, 0, 0, 0])
+        }
+
+    } else {
+        try {
+            let loaded = JSON.parse(atob(document.getElementById('player-name').value))
+            if (loaded.playerName || loaded.rankIndex || loaded.playerWins || loaded.playerDraws || loaded.playerLosses || loaded.playerDamage) {
+                saveState = JSON.parse(atob(document.getElementById('player-name').value));
+                showPopup("Save state has been loaded")
+                document.getElementById('select1').style.display = 'flex'
+                document.getElementById('select2').style.display = 'none'
+                document.getElementById('select3').style.display = 'none'
+                document.getElementById('name-screen').style.display = 'none'
+                document.getElementById('title-container').style.display = 'flex'
+                updateSaveState()
+
+            } else {
+                showPopup("Invalid save state")
+            }
+        } catch (e) {
+            showPopup("Invalid save state")
+        }
+    }
+
+}
+
 
 function initialize() {
     ctx.drawImage(player, player.xloc, player.yloc, player.width, player.height)
@@ -249,9 +317,6 @@ function resultsAnimation() {
         playAgainYloc -= 1
     }
 
-    if (player.health > enemy.health) winner = 1
-    else winner = 2
-
     ctx.fillStyle = "#ffffff"
     if (gameOverHold === 80) {
         results = 20
@@ -264,6 +329,9 @@ function resultsAnimation() {
         playAgainHold = 20
         menu.style.display = 'block'
     }
+    let playAgainText
+    if (leagueFight) playAgainText = "League Updated"
+    else playAgainText = "Play Again?"
 
     if (!game && gameOverHold < 80) {
         ctx.lineWidth = 5;
@@ -271,14 +339,14 @@ function resultsAnimation() {
         ctx.strokeText("Player " + winner + " Wins!", canvas.width / 2, resultsYloc);
         if (!game && resultsHold < 20 && resultsDisplayed) {
             ctx.font = (45 + playAgain) + "px 'Press Start 2P'";
-            ctx.strokeText("Play Again?", canvas.width / 2, playAgainYloc);
+            ctx.strokeText(playAgainText, canvas.width / 2, playAgainYloc);
         }
         ctx.lineWidth = 1;
         ctx.font = (30 + results) + "px 'Press Start 2P'";
         ctx.fillText("Player " + winner + " Wins!", canvas.width / 2, resultsYloc);
         if (!game && resultsHold < 20 && resultsDisplayed) {
             ctx.font = (45 + playAgain) + "px 'Press Start 2P'";
-            ctx.fillText("Play Again?", canvas.width / 2, playAgainYloc);
+            ctx.fillText(playAgainText, canvas.width / 2, playAgainYloc);
         }
     }
 
@@ -453,6 +521,18 @@ function reduceTime() {
         if (!(enemy.stance === "block")) {
             enemy.stance = "idle"
         }
+        if (player.health > (enemy.health * (100/saveState.enemyHp))) winner = 1
+        else winner = 2
+        if (leagueFight) {
+            if (winner === 1) {
+                saveState.playerWins++
+                saveState.rankIndex--
+                leagueFighters[saveState.rankIndex - 1][3]++
+            } else {
+                saveState.playerLosses++
+                leagueFighters[saveState.rankIndex - 1][1]++
+            }
+        }
     }
 
 }
@@ -622,19 +702,21 @@ let enemyStaminaIndicatorBX = 630
 
 function animateHealth() {
     if (player.health > 100) player.health = 100
-    if (enemy.health > 100) enemy.health = 100
+    if (enemy.health > saveState.enemyHp) enemy.health = saveState.enemyHp
 
     //ratio for player is 100 to 435
+    // let playerRatio = 100/player.health = 100/100 = 1 so unneeded
+    let enemyRatio = 100/saveState.enemyHp //use this whenever you display enemy health
     playerHealthTX += (5 + (player.health * 4.3) - playerHealthTX) * 0.1
     playerHealthBX = playerHealthTX - 40
 
-    enemyHealthTX += ((955 - (enemy.health * 4.3)) - enemyHealthTX) * 0.1
+    enemyHealthTX += ((955 - (enemyRatio * enemy.health * 4.3)) - enemyHealthTX) * 0.1
     enemyHealthBX = enemyHealthTX + 40
 
     playerHurtIndicatorTX += (5 + (player.health * 4.3) - playerHurtIndicatorTX) * 0.025
     playerHurtIndicatorBX = playerHurtIndicatorTX - 40
 
-    enemyHurtIndicatorTX += ((955 - (enemy.health * 4.3)) - enemyHurtIndicatorTX) * 0.025
+    enemyHurtIndicatorTX += ((955 - (enemyRatio * enemy.health * 4.3)) - enemyHurtIndicatorTX) * 0.025
     enemyHurtIndicatorBX = enemyHurtIndicatorTX + 40
 }
 
@@ -808,6 +890,19 @@ function drawBars() {
     seconds =  time%60
     if (seconds < 10) seconds = "0" + seconds;
     ctx.fillText(Math.trunc(time/60) + ":" + seconds, 485, 230);
+
+    ctx.fillStyle = "#ffffff"
+    ctx.textAlign = "left";
+
+    ctx.font = "20px 'Press Start 2P'"
+    ctx.fillText(player.leagueName, 15, 35);
+    ctx.textAlign = "right";
+
+    ctx.fillText(enemy.leagueName, 945, 35);
+
+    ctx.textAlign = "center";
+
+
 }
 
 function movePlayers(character) {
@@ -970,22 +1065,33 @@ function rPunch(character) {
     }
 }
 
-function hook(character) {
-    if (character.canPunch && character.stamina > 35) {
-        console.log("player 1 hooked")
-        character.canBlock = false
-        character.isBlocking = false
-        character.punchHold = 36
-        character.punchFrames = character.punchHold
-        character.punchHit = 24 // change according to actual frame once
+function saveMenu() {
+    document.getElementById('select1').style.display = 'none'
+    document.getElementById('select3').style.display = 'flex'
+    document.getElementById('menuText').innerHTML = 'Select State'
+}
 
-        // animated
-        character.isPunching = true
-        character.canPunch = false
-        character.canDodge = false
-        character.damageMultiplier = 1.5
-        character.stamina -= 35
-    }
+let isLoading = false
+
+function loadSaveState() {
+    isLoading = true
+    selection = 6
+    selected = true
+    document.getElementById('nameBack').style.display = 'block'
+    document.getElementById('name-screen-header').innerHTML = 'Paste state here'
+    document.getElementById('player-name').placeholder = 'Ex: ZXhhbXBsZ=='
+    document.getElementById('player-name').value = ""
+    document.getElementById('player-name').style.textTransform = "unSet"
+    document.getElementById('submit-name').innerHTML = "Load"
+}
+
+function updateSaveState() {
+    player.leagueName = saveState.playerName.toUpperCase()
+}
+
+function saveSaveState() {
+    navigator.clipboard.writeText(btoa(JSON.stringify(saveState)));
+    showPopup("Save state has been copied to your clipboard")
 }
 
 document.addEventListener("keydown", function(e) {
@@ -1016,7 +1122,6 @@ document.addEventListener("keydown", function(e) {
         if (e.key.toLowerCase() === 'h') {
             rPunch(player)
         }
-        if (e.key.toLowerCase() === 'v') hook()
 
         if (!ai) {
             if (e.key === 'ArrowLeft') {
@@ -1049,28 +1154,67 @@ document.addEventListener("keydown", function(e) {
 
 
     if (e.key === "Enter" && !initialized && selected) {
+        leagueFight = selection === 11;
         if (selection === 10) {
             mainMenu()
         } else if (selection === 9) {
             playAgainF()
+        } else if (selection === 8) {
+            saveMenu()
+        } else if (selection === 7) {
+            document.getElementById('select1').style.display = 'flex'
+            document.getElementById('rank-board').style.display = 'none'
+            document.getElementById('select2').style.display = 'none'
+            document.getElementById('select3').style.display = 'none'
+            document.getElementById('name-screen').style.display = 'none'
+            document.getElementById('title-container').style.display = 'flex'
+            document.getElementById('title-screen').style.display = 'flex'
+        } else if (selection === 6) {
+            document.getElementById('name-screen').style.display = 'flex'
+            document.getElementById('title-container').style.display = 'none'
+        } else if (selection === 5) {
+            document.getElementById('select1').style.display = 'none'
+            document.getElementById('select2').style.display = 'none'
+            document.getElementById('select3').style.display = 'none'
+            document.getElementById('title-screen').style.display = 'none'
+            document.getElementById('rank-board').style.display = 'block'
+
+            updateLeaderboard(saveState.rankIndex)
         } else {
             if (selection === 3) {
                 document.getElementById('select1').style.display = 'none'
                 document.getElementById('select2').style.display = 'flex'
                 document.getElementById('menuText').innerHTML = 'Select Difficulty'
             } else if (selection === 4) {
-                //tutorial screen
+                showTutorial()
             } else {
                 document.getElementById("gameWindow").style.display = 'block'
+                document.getElementById('rank-board').style.display = 'none'
                 document.getElementById("title-screen").style.display = 'none'
                 initialized = true
                 initialize()
             }
         }
-
+        selected = false
+        if (leagueFight && saveState.rankIndex !== 0) {
+            enemy.leagueName = leagueFighters[saveState.rankIndex - 1][0]
+            enemy.health = saveState.enemyHp
+            enemy.damage = saveState.enemyDmg
+            enemy.defense = saveState.enemyDef
+            enemyStyles.timingStyle = "instant"
+            document.getElementById('playAgain').style.display = 'none'
+        } else {
+            enemy.leagueName = "ENEMY"
+            saveState.enemyHp = 100
+            saveState.enemyDmg = 10
+            saveState.enemyDef = 0
+            document.getElementById('playAgain').style.display = 'flex'
+        }
     }
 
 })
+
+
 
 document.addEventListener("keyup", function(e) {
     if (e.key.toLowerCase() === 'a') {
@@ -1120,7 +1264,7 @@ let ai = true
 
 function select(difficulty) {
     selected = true
-    if (difficulty < 9) {
+    if (difficulty < 5) {
         ai = true
         selection = difficulty
         if (difficulty === 0) enemyStyles.timingStyle = "slow"
@@ -1131,3 +1275,110 @@ function select(difficulty) {
     }
     selection = difficulty
 }
+
+function updateLeaderboard(rankIndex) {
+    let shown = []
+    updatePlayerLeague()
+    document.getElementById('leaderboard-list').innerHTML = ""
+    let ableToBeShown = 5
+    if (rankIndex < 2) {
+        for (let i = 0; i < ableToBeShown; i++) {
+            shown.push((5-i) + ". " + leagueFighters[4-i][0] + ": " +
+                leagueFighters[4-i][1] + "-" + leagueFighters[4-i][2] + "-" + leagueFighters[4-i][3])
+        }
+    } else if (rankIndex < leagueFighters.length - 3) {
+        for (let i = 0; i <= ableToBeShown; i++) {
+            let redundance = saveState.rankIndex + 3 - i
+            shown.push((saveState.rankIndex + 4 - i) + ". " + leagueFighters[redundance][0] + ": " +
+            leagueFighters[redundance][1] + "-" + leagueFighters[redundance][2] + "-" + leagueFighters[redundance][3])
+
+        }
+    } else {
+        for (let i = 0; i < ableToBeShown; i++) {
+            let redundance = leagueFighters.length - i - 1
+            shown.push((15-i) + ". " + leagueFighters[redundance][0] + ": " +
+                leagueFighters[redundance][1] + "-" + leagueFighters[redundance][2] + "-" + leagueFighters[redundance][3])
+        }
+        console.log('used')
+    }
+    shown.reverse()
+    for (let i = 0; i < ableToBeShown; i++) {
+        let list = document.getElementById('leaderboard-list')
+        var iDiv = document.createElement('div');
+        iDiv.className = 'block';
+        iDiv.innerHTML = shown[i]
+        if (shown[i].includes(player.leagueName)) {
+            iDiv.style.color = "#ffe743"
+            iDiv.style.textShadow = "0 0 2px #ffde00"
+        }
+        try {
+            if (shown[i+1].includes(player.leagueName)) {
+                iDiv.style.color = "#ff0000"
+                iDiv.style.textShadow = "0 0 2px #ff0000"
+            }
+        } catch (e) {}
+
+        list.appendChild(iDiv);
+    }
+}
+
+function updatePlayerLeague() {
+    for (i = 0; i < leagueFighters.length; i++) {
+        if (leagueFighters[i].toString().includes(player.leagueName)) {
+            leagueFighters.splice(i, 1)
+            break
+        }
+    }
+    leagueFighters.splice(saveState.rankIndex, 0, [player.leagueName, saveState.playerWins, saveState.playerDraws, saveState.playerLosses])
+}
+
+function challenge() {
+    selection = 11
+    let redundance = leagueFighters[saveState.rankIndex - 1]
+    enemy.leagueName = redundance[0]
+    saveState.enemyHp = redundance[4]
+    saveState.enemyDmg = redundance[5]
+    saveState.enemyDef = redundance[6]
+}
+
+//beyond this point is full chatgpt, i still understand it but since its updating html I thought it would be fine to use
+
+let tutorialSlide = 1;
+const totalSlides = 5;
+
+function showTutorial() {
+    document.getElementById("title-screen").style.display = "none";
+    document.getElementById("tutorial-screen").style.display = "flex";
+    updateSlide();
+}
+
+function updateSlide() {
+    document.getElementById("tutorial-image").src = `Resources/Player%20Keybinds/image${tutorialSlide}.jpg`;
+}
+
+document.getElementById("prev-slide").addEventListener("click", () => {
+    tutorialSlide = (tutorialSlide - 1 < 1) ? totalSlides : tutorialSlide - 1;
+    updateSlide();
+});
+
+document.getElementById("next-slide").addEventListener("click", () => {
+    tutorialSlide = (tutorialSlide + 1 > totalSlides) ? 1 : tutorialSlide + 1;
+    updateSlide();
+});
+
+function showPopup(message) {
+    const popup = document.getElementById("popup-toast");
+    popup.textContent = message;
+
+    // show
+    popup.style.bottom = "40px";
+    popup.style.opacity = "1";
+
+    // hide after 2.5 seconds
+    setTimeout(() => {
+        popup.style.bottom = "-100px";
+        popup.style.opacity = "0";
+    }, 2500);
+}
+
+
