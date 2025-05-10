@@ -8,7 +8,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 </head>
-<body onload="">
+<body>
+<div id="name-screen">
+    <h2 id="name-screen-header">What's your name?</h2>
+    <input type="text" id="player-name" placeholder="ENTER NAME" style="text-transform:uppercase">
+    <div style="display: flex">
+        <button id="submit-name" onclick="start()" class="name">Start</button>
+        <button onclick="select(7)" class="name" id="nameBack" style="display: none">Back</button>
+    </div>
+
+</div>
+
 <div id="title-screen">
     <div id="title-container">
         <h1>Untitled Boxing Game</h1>
@@ -16,30 +26,52 @@
         <div id="button-container">
             <div id="select2" style="display: none">
                 <div class="button-wrapper">
+                    <button onclick="select(7)">Back</button>
+                </div>
+                <div class="button-wrapper">
                     <button onclick="select(0)">Beginner</button>
                 </div>
                 <div class="button-wrapper">
                     <button onclick="select(1)">Advanced</button>
-            </div>
-            </div>
-            <div id="select1" style="display: flex">
-                <div class="button-wrapper">
-                    <button onclick="select(3)">Fight AI</button>
                 </div>
                 <div class="button-wrapper">
                     <button onclick="select(2)">2 Player</button>
                 </div>
+            </div>
+            <div id="select3" style="display: none">
+                <div class="button-wrapper">
+                    <button onclick="select(7)">Back</button>
+                </div>
+                <div class="button-wrapper">
+                    <button onclick="loadSaveState()">Load State</button>
+                </div>
+                <div class="button-wrapper">
+                    <button onclick="saveSaveState()">Save State</button>
+                </div>
+            </div>
+            <div id="select1" style="display: flex">
+                <div class="button-wrapper">
+                    <button onclick="select(3)">Practice</button>
+                </div>
+                <div class="button-wrapper">
+                    <button onclick="select(5)">Ranked</button>
+                </div>
                 <div class="button-wrapper">
                     <button onclick="select(4)">Tutorial</button>
                 </div>
+                <div class="button-wrapper">
+                    <button onclick="select(8)">Save/Load</button>
+                </div>
             </div>
-
         </div>
-
         <p>Press ENTER to select</p>
     </div>
 </div>
-
+<div id="tutorial-screen" style="display: none;">
+    <button id="prev-slide" class="tutorial-tab">←</button>
+    <img id="tutorial-image" src="Resources/Player%20Keybinds/image1.jpg" alt="Tutorial Slide">
+    <button id="next-slide" class="tutorial-tab">→</button>
+</div>
 <div id="gameInteract">
     <div id="playAgainMenu">
         <div id="button-a">
@@ -47,7 +79,7 @@
                 <div class="button-wrapper">
                     <button onclick="select(10)">Main Menu</button>
                 </div>
-                <div class="button-wrapper">
+                <div class="button-wrapper" id="playAgain">
                     <button onclick="select(9)">Again</button>
                 </div>
             </div>
@@ -55,7 +87,25 @@
     </div>
     <canvas id="gameWindow" width="960px" height="540px"></canvas>
 </div>
+<div id="rank-board" style="display: none;">
+    <div id="leaderboard-list-wrapper">
+        <h2>League</h2>
+        <div id="leaderboard-list"></div>
+    </div>
+    <div class="button-wrapper" style="display: flex">
+        <button id="challenge" onclick="challenge()">CHALLENGE</button>
+        <button onclick="select(7)" class="name">Back</button>
+    </div>
+</div>
 
+
+<div id="popup-toast"></div>
 <script src="script.js"></script>
 </body>
 </html>
+
+<!-- add stats system/ when first entering game, prompt user to enter their name / possibly a save system as well /
+record system off of different AI's / not exactly a story mode but maybe have the ability to fight different AI's with
+different stats / definitely add sound (low priority though) / incorporate arrays into whatever you're doing /
+
+okay so add a league system (check jarvis for further details)
